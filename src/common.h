@@ -5,7 +5,7 @@
 #define _COMMON_H_
 
 //#define USE_SSE
-#define IS_SIMULATION 0
+#define IS_SIMULATION 1
 //Amount of samples before average is output on screen.
 #define SAMPLE_RATE 1000
 //Time to run the simulation in seconds.
