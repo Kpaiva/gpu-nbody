@@ -1,28 +1,27 @@
-//Coded by Clinton Bale
-//02/06/2013
+//Team Cosmosis
 
 #pragma once
 #ifndef SIMULATION_H
 #define SIMULATION_H
 
-#include <vector>
-#include "simbody.h"
+#include <thrust/device_vector.h>
+#include "simbody.cu"
 #include "../common.h"
 
 class Simulation {
 private:
-	std::vector<SimBody> bodies_;
+	thrust::device_vector<SimBody> bodies_;
 	bool running_;
 	int sampleCount_;
+	unsigned numBlocks_;
+	unsigned numThreads_;
 
 	Simulation(void);
-	~Simulation(void);
 public:
-	static Simulation& GetInstance();
+	static Simulation& GetInstance(void);
 
 	int Setup(int argc, char* argv[]);
-	void Tick(double dt);
-	int Run(void);	
+	int Run(void);
 };
 
 #endif //SIMULATION_H

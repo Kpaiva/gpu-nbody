@@ -12,8 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="..\..\src\sim\simbody.cpp" />
-    <ClCompile Include="..\..\src\sim\simulation.cpp" />
     <ClCompile Include="..\..\src\timer.cpp" />
     <ClCompile Include="..\..\src\win\body.cpp" />
     <ClCompile Include="..\..\src\win\bodymanager.cpp" />
@@ -22,13 +20,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\common.h" />
-    <ClInclude Include="..\..\src\sim\simbody.h" />
+    <ClInclude Include="..\..\src\sim\simbody.cu" />
     <ClInclude Include="..\..\src\sim\simulation.h" />
     <ClInclude Include="..\..\src\timer.h" />
     <ClInclude Include="..\..\src\win\body.h" />
     <ClInclude Include="..\..\src\win\bodymanager.h" />
     <ClInclude Include="..\..\src\win\game.h" />
     <ClInclude Include="..\..\src\win\imagemanager.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\sim\simulation.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CE7E640D-1F83-4968-BD85-DA1F07F217C7}</ProjectGuid>
@@ -63,6 +64,8 @@
     <TargetName>NBody_$(Configuration)</TargetName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(CUDA_PATH)include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <LibraryPath>$(CUDA_PATH)lib\Win32;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -70,6 +73,8 @@
     <TargetName>NBody_$(Configuration)</TargetName>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>true</RunCodeAnalysis>
+    <IncludePath>$(CudaToolkitIncludeDir);$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+    <LibraryPath>$(CudaToolkitLibDir);$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
