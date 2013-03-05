@@ -20,8 +20,11 @@
 #define IS_LINUX 0
 #endif
 
-typedef struct {
+typedef struct vec2d_s {
+public:
 	double x,y;
+	vec2d_s(void) : x(0.0f), y(0.0f) { }
+	vec2d_s(double _x, double _y) : x(_x), y(_y) {}
 } vec2d_t;
 
 static double random(double min, double max) {
