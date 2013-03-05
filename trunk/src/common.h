@@ -1,6 +1,7 @@
 //Coded by Clinton Bale
 //02/06/2013
 
+#pragma once
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
@@ -10,6 +11,8 @@
 #define SAMPLE_RATE 1000
 //Time to run the simulation in seconds.
 #define TIME_TO_LIVE 240
+//Whether or not to use double precision.
+#define USE_DOUBLE_PRECISION 0
 
 #include <cstdlib>
 #include <ctime>
@@ -20,14 +23,26 @@
 #define IS_LINUX 0
 #endif
 
-typedef struct vec2d_s {
-public:
-	double x,y;
-	vec2d_s(void) : x(0.0f), y(0.0f) { }
-	vec2d_s(double _x, double _y) : x(_x), y(_y) {}
-} vec2d_t;
+#ifdef __CUDACC__
+#define CUDA_CALLABLE_MEMBER __host__ __device__
+#else
+#define CUDA_CALLABLE_MEMBER
+#endif 
 
-static double random(double min, double max) {
+template <typename T>
+struct vec2 {
+	T x,y;
+	CUDA_CALLABLE_MEMBER vec2(void) : x(0.0f), y(0.0f) { }
+	CUDA_CALLABLE_MEMBER vec2(T _x, T _y) : x(_x), y(_y) { }
+};
+
+#if USE_DOUBLE_PRECISION
+typedef vec2<double> vec2_t;
+#else
+typedef vec2<float> vec2_t;
+#endif
+
+static float random(float min, float max) {
 	return min + (rand() % (int)(max - min + 1));
 }
 

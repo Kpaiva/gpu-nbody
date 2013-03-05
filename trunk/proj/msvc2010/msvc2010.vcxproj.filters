@@ -23,15 +23,8 @@
       <Filter>win</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\timer.cpp" />
-    <ClCompile Include="..\..\src\sim\simbody.cpp">
-      <Filter>sim</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\sim\simulation.cpp">
-      <Filter>sim</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\common.h" />
     <ClInclude Include="..\..\src\win\body.h">
       <Filter>win</Filter>
     </ClInclude>
@@ -45,11 +38,17 @@
       <Filter>win</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\timer.h" />
-    <ClInclude Include="..\..\src\sim\simbody.h">
-      <Filter>sim</Filter>
-    </ClInclude>
+    <ClInclude Include="..\..\src\common.h" />
     <ClInclude Include="..\..\src\sim\simulation.h">
       <Filter>sim</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\sim\simbody.cu">
+      <Filter>sim</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\sim\simulation.cu">
+      <Filter>sim</Filter>
+    </None>
   </ItemGroup>
 </Project>
