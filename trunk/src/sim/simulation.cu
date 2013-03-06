@@ -1,7 +1,6 @@
 //Team Cosmosis
 
 #include "simulation.h"
-
 #include "simbody.cu"
 #include "..\timer.h"
 
@@ -11,10 +10,8 @@ typedef struct {
 } BodyArray;
 
 BodyArray MakeArray(thrust::device_vector<SimBody>& arr) {
-	BodyArray b;
-	b.size  = arr.size();
-	b.array = thrust::raw_pointer_cast(&arr[0]);
-	return b;
+	BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
+	return ba;
 }
 
 void __global__ SimCalc(BodyArray a) {
@@ -59,8 +56,8 @@ int Simulation::Setup(int argc, char* argv[]) {
 		sampleCount_ = do_samples;
 	}
 	int num_bodies = atoi(argv[1]);
-	if(num_bodies < 0 || num_bodies > 100000) {
-		std::cout << "** Invalid number of bodies, must be between 1 and 100000. **" << std::endl;
+	if(num_bodies < 0 || num_bodies > 16384) {
+		std::cout << "** Invalid number of bodies, must be between 1 and 16384. **" << std::endl;
 		return 1;
 	}
 	std::cout << "Setting up " << num_bodies << " bodies." << std::endl;
