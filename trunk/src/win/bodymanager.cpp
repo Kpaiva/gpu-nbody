@@ -83,6 +83,8 @@ bool BodyManager::InitFromFile(const char* fileName, sf::RenderWindow* app) {
 	//Reserve count amount of items, for faster adding.
 	bodies_.reserve(count);
 
+
+
 	//Add the bodies
 	for(size_t i = 0; i < count; ++i) {		
 		fscanf(file, "%lf %lf %lf %lf %lf %s\n", &rx, &ry, &vx, &vy, &m, &fileStr);		
