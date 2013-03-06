@@ -1,5 +1,4 @@
-//Coded by Clinton Bale
-//02/06/2013
+//Team Cosmosis
 
 #pragma once
 #ifndef _COMMON_H_
@@ -16,6 +15,9 @@
 
 #include <cstdlib>
 #include <ctime>
+
+template <typename T>
+class _SimBody;
 
 #ifdef __GNUC__
 #define IS_LINUX 1
@@ -38,8 +40,10 @@ struct vec2 {
 
 #if USE_DOUBLE_PRECISION
 typedef vec2<double> vec2_t;
+typedef _SimBody<double> SimBody;
 #else
 typedef vec2<float> vec2_t;
+typedef _SimBody<float> SimBody;
 #endif
 
 static float random(float min, float max) {
