@@ -5,7 +5,7 @@
 #define _COMMON_H_
 
 //#define USE_SSE
-#define IS_SIMULATION 1
+#define IS_SIMULATION 0
 //Amount of samples before average is output on screen.
 #define SAMPLE_RATE 1000
 //Time to run the simulation in seconds.
@@ -18,6 +18,9 @@
 
 template <typename T>
 class _SimBody;
+
+template <typename T>
+class _Body;
 
 #ifdef __GNUC__
 #define IS_LINUX 1
