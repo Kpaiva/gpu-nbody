@@ -55,7 +55,7 @@ class BodyManager : sf::NonCopyable {
 	BodyManager(void) 
 		: imageManager_(ImageManager::GetInstance()) {
 		zoomLevel_ = 128;
-		srand((unsigned int)time(NULL));
+		srand((unsigned int)time(NULL)); //take out int      *srand((unsigned)time(NULL));
 	}
 
 	~BodyManager(void) {
