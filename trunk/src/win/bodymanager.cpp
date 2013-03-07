@@ -94,14 +94,14 @@ bool BodyManager::InitFromFile(const char* fileName, sf::RenderWindow* app) {
 	return !fclose(file);
 }
 
-void BodyManager::AddBody(const Body& body) {
+void BodyManager::AddBody(const _Body& body) {
 	bodies_.push_back(body);
 }
 
 void BodyManager::Render( void ) {
 	size_t size = bodies_.size();
 	for(size_t i = 0; i < size; ++i) {
-		Body& body = bodies_[i];
+		_Body& body = bodies_[i];
 		body.SetSpritePosition(body.Position.x*zoomLevel_/solarRadius_, body.Position.y*zoomLevel_/solarRadius_);
 		app_->Draw(body);		
 	}

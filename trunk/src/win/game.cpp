@@ -171,7 +171,7 @@ int Game::Run(const char* argv)
 				x = x * r / bm.ZoomLevel();
 				y = y * r / bm.ZoomLevel();
 				bm.AddBody(SimBody(x, y, 0, 0, 5.974e24));
-				bm.AddBodySprite(Body(ImageManager::GetInstance().GetImage("earth.gif")));
+				bm.AddBodySprite(_Body(ImageManager::GetInstance().GetImage("earth.gif")));
 
 			}
 			else if(event.Type == Event::MouseButtonPressed && event.MouseButton.Button == sf::Mouse::Right) {

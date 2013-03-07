@@ -22,9 +22,6 @@
 template <typename T>
 class _SimBody;
 
-template <typename T>
-class _Body;
-
 #ifdef __GNUC__
 #define IS_LINUX 1
 #else
@@ -48,12 +45,10 @@ struct vec2
 #if USE_DOUBLE_PRECISION
 typedef vec2<double> vec2_t;
 typedef _SimBody<double> SimBody;
-typedef _Body<double> Body;
 static double random(double min, double max) { return (min + (rand() % (int)(max - min + 1))); }
 #else
 typedef vec2<float> vec2_t;
 typedef _SimBody<float> SimBody;
-typedef _Body<float> Body;
 static float random(float min, float max) { return (min + (rand() % (int)(max - min + 1))); }
 #endif
 
