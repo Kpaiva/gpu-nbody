@@ -12,22 +12,7 @@
 #include "../sim/simbody.cu"
 #include "../sim/simulation.cu"
 
-/*
-typedef struct
-{
-    Body *array;
-    unsigned size;
-} BodyArray;
-
-
-BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
-{
-    BodyArray ba = 
-    { thrust::raw_pointer_cast(&arr[0]), arr.size() };
-    return ba;
-}
-*/
-void __global__ TickTop(BodyArray bodies) {
+__global__ void TickTop(BodyArray bodies) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
 		bodies.array[idx].ResetForce();
@@ -38,7 +23,7 @@ void __global__ TickTop(BodyArray bodies) {
 	}
 }
 
-void __global__ TickBottom(BodyArray bodies, float time) {
+__global__ void TickBottom(BodyArray bodies, float time) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) 
 		bodies.array[idx].Tick(time);
@@ -50,15 +35,14 @@ class BodyManager : sf::NonCopyable {
 	BodyManager(void) 
 		: imageManager_(ImageManager::GetInstance()) {
 		zoomLevel_ = 128;
-		//srand((unsigned int)time(NULL)); 
 	}
 
 	~BodyManager(void) {
-		//bodies_.clear();
+		bodies_.clear();
 	}
 
 	thrust::device_vector<SimBody> bodies_;
-	std::vector<Body> sprites_;
+	std::vector<_Body> sprites_;
     BodyArray arr_;
 	ImageManager& imageManager_;
 	sf::RenderWindow* app_;
@@ -95,7 +79,7 @@ public:
 	bool Init(int count, double radius, sf::RenderWindow* app) {	
 		if(app == NULL || count <= 0 || radius <= 0) return false;
 
-		//bodies_.clear();
+		bodies_.clear();
 		bodies_.reserve(count*16);
 		sprites_.reserve(count*16);
 		solarRadius_ = radius;
@@ -115,7 +99,7 @@ public:
 		//Set the render window
 		app_ = app;
 		//Remove previous loads
-		//bodies_.clear();
+		bodies_.clear();
 
 		FILE* file = fopen(fileName, "r");
 	
@@ -140,7 +124,6 @@ public:
 
         // ------ kernel launch configurations starts here
         int dev;
-        cudaError_t error;
         cudaDeviceProp prop;
 
         if (cudaGetDevice(&dev) != cudaSuccess){
@@ -161,7 +144,7 @@ public:
 		for(size_t i = 0; i < count; ++i) {		
 			fscanf(file, "%lf %lf %lf %lf %lf %s\n", &rx, &ry, &vx, &vy, &m, &fileStr);		
 			AddBody(SimBody(rx, ry, vx, vy, m));
-			AddBodySprite(Body(imageManager_.GetImage(fileStr)));
+			AddBodySprite(_Body(imageManager_.GetImage(fileStr)));
 		}
 
         arr_ = MakeArray(bodies_);
@@ -173,12 +156,12 @@ public:
 		bodies_.push_back(body);
 	} 
 
-	void AddBodySprite(const Body& body) {
+	void AddBodySprite(const _Body& body) {
 		sprites_.push_back(body);
 	} 
 
 	void ClearBodies() {
-		//bodies_.clear();
+		bodies_.clear();
 	}
 
 	double GetSolarRadius() const {
