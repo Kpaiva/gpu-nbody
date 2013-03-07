@@ -6,8 +6,10 @@
 #include <fstream>
 #include <cmath>
 #include <vector>
-
+#include <thrust/device_vector.h>
+#include <cuda_runtime.h>
 #include "imagemanager.h"
+
 
 typedef struct
 {
@@ -17,11 +19,12 @@ typedef struct
 
 BodyArray MakeArray(thrust::device_vector<Body> &arr)
 {
-    BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
+    BodyArray ba = 
+    { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
 }
 
-void __global__ RenderK(BodyArray* bodies) {
+void __global__ RenderK(BodyArray bodies) {
 /*
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	Body& body = bodies[idx];
@@ -29,24 +32,24 @@ void __global__ RenderK(BodyArray* bodies) {
 */
 }
 
-void __global__ TickTop(BodyArray* bodies) {
+void __global__ TickTop(BodyArray bodies) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
-		bodies[idx].ResetForce();
+		bodies.array[idx].ResetForce();
 
 		for(size_t j = 0; j < bodies.size; ++j)
 			if(idx != j)
-				bodies[idx].AddForce(bodies[j]);
+				bodies.array[idx].AddForce(bodies.array[j]);
 	}
 }
 
-void __global__ TickBottom(BodyArray* bodies, float time) {
+void __global__ TickBottom(BodyArray bodies, float time) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
-		bodies[idx].Tick(time);
+		bodies.array[idx].Tick(time);
 }
 
-class Body;
+
 
 class BodyManager : sf::NonCopyable {
 	BodyManager(void) 
@@ -202,9 +205,5 @@ public:
 
     unsigned getThreads() const {
         return numThreads_;
-    }
-
-    BodyArray* getBodyArray() const {
-        return arr_;
     }
 };
