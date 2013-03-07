@@ -9,29 +9,24 @@
 #include <thrust/device_vector.h>
 #include <cuda_runtime.h>
 #include "imagemanager.h"
+#include "../sim/simbody.cu"
+#include "../sim/simulation.cu"
 
-
+/*
 typedef struct
 {
     Body *array;
     unsigned size;
 } BodyArray;
 
-BodyArray MakeArray(thrust::device_vector<Body> &arr)
+
+BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
 {
     BodyArray ba = 
     { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
 }
-
-void __global__ RenderK(BodyArray bodies) {
-/*
-	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	Body& body = bodies[idx];
-	body.SetSpritePosition(body.Position.x*zoomLevel_/solarRadius_, body.Position.y*zoomLevel_/solarRadius_);
 */
-}
-
 void __global__ TickTop(BodyArray bodies) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
@@ -45,7 +40,7 @@ void __global__ TickTop(BodyArray bodies) {
 
 void __global__ TickBottom(BodyArray bodies, float time) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	if(idx < bodies.size) {
+	if(idx < bodies.size) 
 		bodies.array[idx].Tick(time);
 }
 
@@ -55,14 +50,15 @@ class BodyManager : sf::NonCopyable {
 	BodyManager(void) 
 		: imageManager_(ImageManager::GetInstance()) {
 		zoomLevel_ = 128;
-		srand((unsigned int)time(NULL)); //take out int      *srand((unsigned)time(NULL));
+		//srand((unsigned int)time(NULL)); 
 	}
 
 	~BodyManager(void) {
-		bodies_.clear();
+		//bodies_.clear();
 	}
 
-	thrust::device_vector<Body> bodies_;
+	thrust::device_vector<SimBody> bodies_;
+	std::vector<Body> sprites_;
     BodyArray arr_;
 	ImageManager& imageManager_;
 	sf::RenderWindow* app_;
@@ -71,6 +67,7 @@ class BodyManager : sf::NonCopyable {
 
     unsigned numBlocks_;
     unsigned numThreads_;
+
 public:
 	static BodyManager& GetInstance() {
 		static BodyManager self;
@@ -78,16 +75,12 @@ public:
 	}
 
 	void Render( void ) {
-	/*
-		RenderK<<<#,#>>>(bodies_);
-		cudaDeviceSynchronize();
-
 		size_t size = bodies_.size();
 		for(size_t i = 0; i < size; ++i) {
-			//Could put this into a for loop to draw (on the host)
-			app_->Draw(body);		
+			SimBody body = bodies_[i];
+			sprites_[i].SetSpritePosition(body.Position.x*zoomLevel_/solarRadius_, body.Position.y*zoomLevel_/solarRadius_);
+			app_->Draw(sprites_[i]);		
 		}
-	*/
 	}
 
     void Tick(float timeStep) {
@@ -102,8 +95,9 @@ public:
 	bool Init(int count, double radius, sf::RenderWindow* app) {	
 		if(app == NULL || count <= 0 || radius <= 0) return false;
 
-		bodies_.clear();
+		//bodies_.clear();
 		bodies_.reserve(count*16);
+		sprites_.reserve(count*16);
 		solarRadius_ = radius;
 		app_ = app;
 
@@ -121,7 +115,7 @@ public:
 		//Set the render window
 		app_ = app;
 		//Remove previous loads
-		bodies_.clear();
+		//bodies_.clear();
 
 		FILE* file = fopen(fileName, "r");
 	
@@ -142,6 +136,7 @@ public:
 		solarRadius_ = radius;
 		//Reserve count amount of items, for faster adding.
 		bodies_.reserve(count);
+		sprites_.reserve(count);
 
         // ------ kernel launch configurations starts here
         int dev;
@@ -165,7 +160,8 @@ public:
 		//Make this part into a kernel ?
 		for(size_t i = 0; i < count; ++i) {		
 			fscanf(file, "%lf %lf %lf %lf %lf %s\n", &rx, &ry, &vx, &vy, &m, &fileStr);		
-			AddBody(Body(imageManager_.GetImage(fileStr), rx, ry, vx, vy, m));
+			AddBody(SimBody(rx, ry, vx, vy, m));
+			AddBodySprite(Body(imageManager_.GetImage(fileStr)));
 		}
 
         arr_ = MakeArray(bodies_);
@@ -173,12 +169,16 @@ public:
 		return !fclose(file);
 	}
 
-	CUDA_CALLABLE_MEMBER void AddBody(const Body& body) {
+	CUDA_CALLABLE_MEMBER void AddBody(const SimBody& body) {
 		bodies_.push_back(body);
 	} 
 
+	void AddBodySprite(const Body& body) {
+		sprites_.push_back(body);
+	} 
+
 	void ClearBodies() {
-		bodies_.clear();
+		//bodies_.clear();
 	}
 
 	double GetSolarRadius() const {

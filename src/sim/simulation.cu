@@ -3,6 +3,7 @@
 #include "simulation.h"
 #include "simbody.cu"
 #include "..\timer.h"
+#include <cuda_runtime.h>
 
 typedef struct
 {

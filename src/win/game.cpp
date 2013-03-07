@@ -1,10 +1,10 @@
 //Coded by Clinton Bale
 //02/06/2013
 
-#include "win/game.h"
-#include "win/bodymanager.cu"
-#include "win/imagemanager.h"
-#include "timer.h"
+#include "game.h"
+#include "bodymanager.cu"
+#include "imagemanager.h"
+#include "../timer.h"
 
 using namespace sf;
 
@@ -113,7 +113,7 @@ int Game::Run(const char* argv)
 {
 	running_ = true;	
 	
-	BodyManager& bm = BodyManager::GetInstance();	
+	BodyManager& bm = BodyManager::GetInstance();
 	bm.InitFromFile(argv[0] ? argv : "sbh3.txt", &app_);
 
 	Event event;	
@@ -170,7 +170,9 @@ int Game::Run(const char* argv)
 
 				x = x * r / bm.ZoomLevel();
 				y = y * r / bm.ZoomLevel();
-				bm.AddBody(Body(ImageManager::GetInstance().GetImage("earth.gif"), x, y, 0, 0, 5.974e24));
+				bm.AddBody(SimBody(x, y, 0, 0, 5.974e24));
+				bm.AddBodySprite(Body(ImageManager::GetInstance().GetImage("earth.gif")));
+
 			}
 			else if(event.Type == Event::MouseButtonPressed && event.MouseButton.Button == sf::Mouse::Right) {
 				mouseMove = true;

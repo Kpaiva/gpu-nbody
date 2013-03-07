@@ -6,7 +6,7 @@
 #define GAME_H
 
 #include <SFML/Graphics/RenderWindow.hpp>
-#include "common.h"
+#include "../common.h"
 
 #define FRAMERATE 120
 
