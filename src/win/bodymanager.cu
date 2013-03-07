@@ -25,7 +25,7 @@ void __global__ TickTop(Body* bodies) {
 
 		for(size_t j = 0; j < bodies.size; ++j)
 			if(idx != j)
-				a.array[idx].AddForce(a.array[j]);
+				bodies[idx].AddForce(bodies[j]);
 	}
 */
 }

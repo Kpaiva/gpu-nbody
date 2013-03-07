@@ -2,8 +2,8 @@
 //02/06/2013
 
 #include "win/game.h"
-#include "win/bodymanager.h"
-#include "win/body.h"
+#include "win/bodymanager.cu"
+#include "win/body.cu"
 #include "win/imagemanager.h"
 #include "timer.h"
 
@@ -185,6 +185,7 @@ int Game::Run(const char* argv)
 		app_.Clear();		
 		
 		//update
+		//Launch kernel here
 		bm.Tick(timeStep);
 				
 		if(mouseMove) {
@@ -207,6 +208,7 @@ int Game::Run(const char* argv)
 			app_.SetView(View(center_, Vector2f(Game::WIDTH/2,Game::HEIGHT/2)));
 		}	
 
+		//Maybe launch kernel here or inside the function
 		bm.Render();	
 
 		DrawDebug();
