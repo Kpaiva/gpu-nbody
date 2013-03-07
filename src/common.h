@@ -29,25 +29,29 @@ class _SimBody;
 #define CUDA_CALLABLE_MEMBER __host__ __device__
 #else
 #define CUDA_CALLABLE_MEMBER
-#endif 
+#endif
 
 template <typename T>
-struct vec2 {
-	T x,y;
-	CUDA_CALLABLE_MEMBER vec2(void) : x(0.0f), y(0.0f) { }
-	CUDA_CALLABLE_MEMBER vec2(T _x, T _y) : x(_x), y(_y) { }
+struct vec2
+{
+    T x, y;
+    CUDA_CALLABLE_MEMBER vec2(void) : x(0.0f), y(0.0f) { }
+    CUDA_CALLABLE_MEMBER vec2(T _x, T _y) : x(_x), y(_y) { }
 };
 
 #if USE_DOUBLE_PRECISION
 typedef vec2<double> vec2_t;
 typedef _SimBody<double> SimBody;
+typedef _Body<double> Body;
 #else
 typedef vec2<float> vec2_t;
 typedef _SimBody<float> SimBody;
+typedef _Body<float> Body;
 #endif
 
-static float random(float min, float max) {
-	return min + (rand() % (int)(max - min + 1));
+static float random(float min, float max)
+{
+    return min + (rand() % (int)(max - min + 1));
 }
 
 #endif //_COMMON_H_

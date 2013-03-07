@@ -3,7 +3,6 @@
 
 #include "win/game.h"
 #include "win/bodymanager.cu"
-#include "win/body.cu"
 #include "win/imagemanager.h"
 #include "timer.h"
 
@@ -119,8 +118,8 @@ int Game::Run(const char* argv)
 
 	Event event;	
 	double timeStep = 25000;
-
 	bool mouseMove = false;
+
 	Vector2i mouseLoc;
 	while(running_) {
 		while (app_.GetEvent(event)) {
@@ -182,10 +181,10 @@ int Game::Run(const char* argv)
 				mouseMove = false;
 			}
 		}		
-		app_.Clear();		
-		
+		app_.Clear();	
+
 		//update
-		//Launch kernel here
+		//Kernels are launched within Tick
 		bm.Tick(timeStep);
 				
 		if(mouseMove) {

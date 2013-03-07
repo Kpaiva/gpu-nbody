@@ -9,7 +9,19 @@
 
 #include "imagemanager.h"
 
-void __global__ RenderK(Body* bodies) {
+typedef struct
+{
+    Body *array;
+    unsigned size;
+} BodyArray;
+
+BodyArray MakeArray(thrust::device_vector<Body> &arr)
+{
+    BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
+    return ba;
+}
+
+void __global__ RenderK(BodyArray* bodies) {
 /*
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	Body& body = bodies[idx];
@@ -17,8 +29,7 @@ void __global__ RenderK(Body* bodies) {
 */
 }
 
-void __global__ TickTop(Body* bodies) {
-/*
+void __global__ TickTop(BodyArray* bodies) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
 		bodies[idx].ResetForce();
@@ -27,15 +38,12 @@ void __global__ TickTop(Body* bodies) {
 			if(idx != j)
 				bodies[idx].AddForce(bodies[j]);
 	}
-*/
 }
 
-void __global__ TickBottom((Body* bodies, float time) {
-/*
+void __global__ TickBottom(BodyArray* bodies, float time) {
 	int idx = blockIdx.x * blockDim.x + threadIdx.x;
 	if(idx < bodies.size) {
 		bodies[idx].Tick(time);
-*/
 }
 
 class Body;
@@ -51,18 +59,22 @@ class BodyManager : sf::NonCopyable {
 		bodies_.clear();
 	}
 
-	std::vector<Body> bodies_;
+	thrust::device_vector<Body> bodies_;
+    BodyArray arr_;
 	ImageManager& imageManager_;
 	sf::RenderWindow* app_;
 	double solarRadius_;	
 	size_t zoomLevel_;
+
+    unsigned numBlocks_;
+    unsigned numThreads_;
 public:
 	static BodyManager& GetInstance() {
 		static BodyManager self;
 		return self;
 	}
 
-	void BodyManager::Render( void ) {
+	void Render( void ) {
 	/*
 		RenderK<<<#,#>>>(bodies_);
 		cudaDeviceSynchronize();
@@ -74,6 +86,15 @@ public:
 		}
 	*/
 	}
+
+    void Tick(float timeStep) {
+        TickTop<<<numBlocks_, numThreads_>>>(arr_);
+        if (cudaDeviceSynchronize() != cudaSuccess)
+            std::cout << "Error Tick!" << std::endl;
+        TickBottom<<<numBlocks_, numThreads_>>>(arr_, timeStep);
+        if (cudaDeviceSynchronize() != cudaSuccess)
+            std::cout << "Error Tick!" << std::endl;
+    }
 
 	bool Init(int count, double radius, sf::RenderWindow* app) {	
 		if(app == NULL || count <= 0 || radius <= 0) return false;
@@ -119,12 +140,32 @@ public:
 		//Reserve count amount of items, for faster adding.
 		bodies_.reserve(count);
 
+        // ------ kernel launch configurations starts here
+        int dev;
+        cudaError_t error;
+        cudaDeviceProp prop;
+
+        if (cudaGetDevice(&dev) != cudaSuccess){
+            std::cout << "Error 1" << std::endl;
+            return 1;
+        }
+
+        if (cudaGetDeviceProperties(&prop, dev) != cudaSuccess){
+            std::cout << "Error 1" << std::endl;
+            return 1;
+        }
+
+        numThreads_ = prop.maxThreadsDim[0];
+        numBlocks_ = (count + numThreads_ - 1) / numThreads_;
+
 		//Add the bodies
 		//Make this part into a kernel ?
 		for(size_t i = 0; i < count; ++i) {		
 			fscanf(file, "%lf %lf %lf %lf %lf %s\n", &rx, &ry, &vx, &vy, &m, &fileStr);		
 			AddBody(Body(imageManager_.GetImage(fileStr), rx, ry, vx, vy, m));
 		}
+
+        arr_ = MakeArray(bodies_);
 
 		return !fclose(file);
 	}
@@ -154,4 +195,16 @@ public:
 	int ZoomLevel() const {
 		return zoomLevel_;
 	}
+
+    unsigned getBlocks() const {
+        return numBlocks_;
+    }
+
+    unsigned getThreads() const {
+        return numThreads_;
+    }
+
+    BodyArray* getBodyArray() const {
+        return arr_;
+    }
 };
