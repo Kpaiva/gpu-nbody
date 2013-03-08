@@ -1,9 +1,9 @@
 #pragma once
 #include "../sim/simulation.cu"
-#include "../sim/simbody.cu"
 #include <cmath>
 #include <fstream>
 #include "bodymanager.h"
+#include "cuda_runtime.h"
 
 __global__ void TickTop(BodyArray bodies)
 {
@@ -55,10 +55,10 @@ void BodyManager::Render( void )
 
 void BodyManager::Tick(float timeStep)
 {
-    TickTop <<< numBlocks_, numThreads_>>>(arr_);
+    TickTop<<<numBlocks_, numThreads_>>>(arr_);
     if (cudaDeviceSynchronize() != cudaSuccess)
         std::cout << "Error Tick!" << std::endl;
-    TickBottom <<< numBlocks_, numThreads_>>>(arr_, timeStep);
+    TickBottom<<<numBlocks_, numThreads_>>>(arr_, timeStep);
     if (cudaDeviceSynchronize() != cudaSuccess)
         std::cout << "Error Tick!" << std::endl;
 }
