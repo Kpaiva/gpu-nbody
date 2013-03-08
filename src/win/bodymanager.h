@@ -9,13 +9,19 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <vector>
 #include "imagemanager.h"
-#include "body.cu"
+#include "body.h"
 #include "../sim/simbody.cu"
 #include <thrust/device_vector.h>
 #include <cuda_runtime.h>
 #include "imagemanager.h"
 
 class _Body;
+
+typedef struct
+{
+	SimBody *array;
+	unsigned size;
+} BodyArray;
 
 class BodyManager : sf::NonCopyable {
 	BodyManager(void);

@@ -1,40 +1,30 @@
-//Coded by Clinton Bale
-//01/14/2013
-
-//Coded by Clinton Bale
-//02/06/2013
-
 #pragma once
-#ifndef BODY_H
-#define BODY_H
-
 #include <SFML/Graphics.hpp>
-#include "common.h"
+#include "../common.h"
+#include <cassert>
+#include "../sim/simbody.cu"
 
-class Body {
-private:
-	sf::Sprite	sprite_;
-	double		mass_;
-
-	inline double ComputeGC(double m1, double m2, double d);	
+class _Body 
+{
+    sf::Sprite  sprite_;
 public:
-	sf::Vector2<double> Force;
-	sf::Vector2<double> Velocity;
-	sf::Vector2<double> Position;
+    _Body(sf::Image *image): sprite_(*image)
+    {
+        sprite_.SetCenter(image->GetWidth() / 2.0f, image->GetHeight() / 2.0f);
+    }
 
-	Body(sf::Image* image, double rx = 0.0, double ry = 0.0, double vx = 0.0, double vy = 0.0, double mass = 0.0);
+    sf::Sprite &Sprite() const
+    {
+        return (sf::Sprite &)sprite_;
+    }
 
-	void Tick(double dt);	
-	
-	void AddForce(const Body& b);
-	void ResetForce();
+    operator sf::Sprite &() const
+    {
+        return (sf::Sprite &)sprite_;
+    }
 
-	operator sf::Sprite&() const;
-	sf::Sprite& Sprite() const;
-	void SetSpritePosition(float x, float y);
-
-	double SetMass(double mass);
-	double GetMass() const;
+    void SetSpritePosition( float x, float y )
+    {
+        sprite_.SetPosition(x, y);
+    }
 };
-
-#endif //BODY_H
