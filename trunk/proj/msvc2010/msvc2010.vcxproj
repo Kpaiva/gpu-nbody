@@ -13,9 +13,6 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\timer.cpp" />
-    <ClCompile Include="..\..\src\win\body.cpp" />
-    <ClCompile Include="..\..\src\win\bodymanager.cpp" />
-    <ClCompile Include="..\..\src\win\game.cpp" />
     <ClCompile Include="..\..\src\win\imagemanager.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -30,6 +27,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\sim\simulation.cu" />
+    <None Include="..\..\src\win\bodymanager.cu" />
+    <None Include="..\..\src\win\game.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CE7E640D-1F83-4968-BD85-DA1F07F217C7}</ProjectGuid>
