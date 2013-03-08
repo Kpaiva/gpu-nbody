@@ -2,7 +2,7 @@
 //02/06/2013
 
 #include "game.h"
-#include "bodymanager.cu"
+#include "bodymanager.h"
 #include "imagemanager.h"
 #include "../timer.h"
 

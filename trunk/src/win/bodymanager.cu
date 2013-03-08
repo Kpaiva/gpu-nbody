@@ -1,28 +1,33 @@
 #pragma once
-#include "../sim/simulation.cu"
+#include "../sim/simbody.cu"
 #include <cmath>
 #include <fstream>
 #include "bodymanager.h"
-#include "cuda_runtime.h"
 
-__global__ void TickTop(BodyArray bodies)
+BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < bodies.size)
-    {
-        bodies.array[idx].ResetForce();
-
-        for (size_t j = 0; j < bodies.size; ++j)
-            if (idx != j)
-                bodies.array[idx].AddForce(bodies.array[j]);
-    }
+	BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
+	return ba;
 }
 
-__global__ void TickBottom(BodyArray bodies, float time)
+void __global__ TickTop(BodyArray bodies)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < bodies.size)
-        bodies.array[idx].Tick(time);
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx < bodies.size)
+	{
+		bodies.array[idx].ResetForce();
+
+		for (size_t j = 0; j < bodies.size; ++j)
+			if (idx != j)
+				bodies.array[idx].AddForce(bodies.array[j]);
+	}
+}
+
+void __global__ TickBottom(BodyArray bodies, float time)
+{
+	int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	if (idx < bodies.size)
+		bodies.array[idx].Tick(time);
 }
 
 BodyManager::BodyManager(void)
@@ -55,10 +60,10 @@ void BodyManager::Render( void )
 
 void BodyManager::Tick(float timeStep)
 {
-    TickTop<<<numBlocks_, numThreads_>>>(arr_);
+    TickTop <<< numBlocks_, numThreads_>>>(arr_);
     if (cudaDeviceSynchronize() != cudaSuccess)
         std::cout << "Error Tick!" << std::endl;
-    TickBottom<<<numBlocks_, numThreads_>>>(arr_, timeStep);
+    TickBottom <<< numBlocks_, numThreads_>>>(arr_, timeStep);
     if (cudaDeviceSynchronize() != cudaSuccess)
         std::cout << "Error Tick!" << std::endl;
 }
