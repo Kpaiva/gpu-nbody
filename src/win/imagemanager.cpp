@@ -1,5 +1,4 @@
-//Coded by Clinton Bale
-//02/06/2013
+//Team Cosmosis
 
 #include "imagemanager.h"
 

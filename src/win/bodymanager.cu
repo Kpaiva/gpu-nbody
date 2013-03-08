@@ -1,3 +1,5 @@
+//Team Cosmosis
+
 #pragma once
 #include "../sim/simbody.cu"
 #include <cmath>
