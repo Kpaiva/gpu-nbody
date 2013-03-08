@@ -1,5 +1,4 @@
-//Coded by Clinton Bale
-//02/06/2013
+//Team Cosmosis
 
 #pragma once
 #ifndef GAME_H
