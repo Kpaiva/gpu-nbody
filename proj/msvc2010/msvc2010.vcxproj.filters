@@ -10,21 +10,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="..\..\src\win\body.cpp">
-      <Filter>win</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\win\bodymanager.cpp">
-      <Filter>win</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\win\game.cpp">
-      <Filter>win</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\src\timer.cpp" />
     <ClCompile Include="..\..\src\win\imagemanager.cpp">
       <Filter>win</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\timer.h" />
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\sim\simulation.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\sim\simbody.cu">
+      <Filter>sim</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\win\body.h">
       <Filter>win</Filter>
     </ClInclude>
@@ -37,18 +36,16 @@
     <ClInclude Include="..\..\src\win\imagemanager.h">
       <Filter>win</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\timer.h" />
-    <ClInclude Include="..\..\src\common.h" />
-    <ClInclude Include="..\..\src\sim\simulation.h">
-      <Filter>sim</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sim\simbody.cu">
-      <Filter>sim</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\sim\simulation.cu">
       <Filter>sim</Filter>
+    </None>
+    <None Include="..\..\src\win\bodymanager.cu">
+      <Filter>win</Filter>
+    </None>
+    <None Include="..\..\src\win\game.cu">
+      <Filter>win</Filter>
     </None>
   </ItemGroup>
 </Project>
