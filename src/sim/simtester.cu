@@ -2,14 +2,16 @@
 #ifndef SIM_TEST_H
 #define SIM_TEST_H
 
-#include "simtester.h"
-#include "simulation.h"
-
 #include <iostream>
 #include <vector>
-#include <stdint.h>
-
+#include "simbody.cu"
+#include "simulation.h"
+#include "simtester.h"
+#if IS_TESTING
+#include <cuda_runtime.h>
 #include <thrust/device_vector.h>
+
+#include <stdint.h>
 
 uint64_t SimHostTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_samples)
 {
@@ -69,17 +71,29 @@ uint64_t SimDeviceTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_
     int max_threads = prop.maxThreadsDim[0];
 
 	int numBlocks_ = (d_bodies.size() + max_threads - 1) / max_threads;
-	int maxResidentThreads_ = max_threads;
+	//int maxResidentThreads_ = max_threads;
 
-	int threads = maxResidentThreads_ / numBlocks_;
+	//int threads = maxResidentThreads_ / numBlocks_;
 	BodyArray arr = MakeArray(d_bodies);
 
+	//my stuff
+	int threads;
+    int numThreads = max_threads;
+	int blocks;
+	int maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
+
+	prop.major > 2 ? blocks = 16 : blocks = 8;
+	maxResidentThreads_ > numThreads ? threads = numThreads / blocks : threads = maxResidentThreads_ / blocks;
+	////
+
 	for(uint32_t sample(0); sample != num_samples; ++sample) {	
-		SimCalc <<<numBlocks_, threads>>>(arr);
+		//SimCalc <<<numBlocks_, threads>>>(arr);
+		SimCalc <<< blocks, threads>>>(arr);
 		//Ensure that we have done all calculations before we move on to tick.
 		cudaThreadSynchronize();
 
-		SimTick <<<numBlocks_, threads>>>(arr, timeStep);
+		//SimTick <<<numBlocks_, threads>>>(arr, timeStep);
+		SimTick <<< blocks, threads>>>(arr, timeStep);
 		//Ensure that we have ticked all before we move to calculate the average.
 		cudaThreadSynchronize();
 	}
@@ -145,5 +159,5 @@ void SimFullTest(uint32_t extra_passes)
 	else 
 		std::cout << success << " tests failed!" << std::endl;	
 }
-
+#endif IS_TESTING
 #endif //SIM_TEST_H

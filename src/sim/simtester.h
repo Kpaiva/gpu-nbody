@@ -2,8 +2,8 @@
 #ifndef SIM_TEST_H
 #define SIM_TEST_H
 
-#include <stdint.h>
 #include <vector>
+#include <stdint.h>
 #include "../common.h"
 
 uint64_t SimHostTest(const std::vector<_SimBody<float>>& bodies,   uint32_t num_samples);
