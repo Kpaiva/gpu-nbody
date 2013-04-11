@@ -4,6 +4,8 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
+#define IS_TESTING 1
+
 #define IS_SIMULATION 1
 //Amount of samples before average is output on screen.
 #define SAMPLE_RATE 1000
