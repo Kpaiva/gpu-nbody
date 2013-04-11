@@ -26,6 +26,7 @@ private:
 	unsigned numBlocks_;
 	unsigned numThreads_;
 	unsigned maxResidentThreads_;
+	unsigned blocks_;
 
 	Simulation(void);
 public:

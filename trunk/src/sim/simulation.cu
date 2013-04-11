@@ -51,7 +51,7 @@ void __global__ SimTick(BodyArray a, float dt)
     }
 }
 
-Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0), maxResidentThreads_(0) { }
+Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0), maxResidentThreads_(0), blocks_(0) { }
 
 Simulation &Simulation::GetInstance(void)
 {
@@ -121,10 +121,13 @@ int Simulation::Setup(int argc, char *argv[])
     numThreads_ = max_threads;
 	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
 
+	prop.major > 2 ? blocks_ = 16 : blocks_ = 8;
+
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
               "\tThreads: " << numThreads_ << std::endl <<
-			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl;
+			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl <<
+			  "\tMax Resident Blocks: " << blocks_ << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
 }
@@ -145,14 +148,21 @@ int Simulation::Run(void)
     while (running_)
     {
 		int threads;
+		int blocks;/*
 		numBlocks_ > 1 ? threads = maxResidentThreads_ / numBlocks_ : threads = numThreads_;
 		
-        SimCalc <<< numBlocks_, numThreads_>>>(arr);
+        SimCalc <<< numBlocks_, threads>>>(arr);
         //Ensure that we have done all calculations before we move on to tick.
         cudaThreadSynchronize();
 
-        SimTick <<< numBlocks_, numThreads_>>>(arr, timeStep);
+        SimTick <<< numBlocks_, threads>>>(arr, timeStep);*/
         //Ensure that we have ticked all before we move to calculate the average.
+
+		maxResidentThreads_ > numThreads_ ? threads = numThreads_ / blocks_ : threads = maxResidentThreads_ / blocks_;
+
+		SimCalc <<< blocks_, threads>>>(arr);
+		cudaThreadSynchronize();
+		SimTick <<< blocks_, threads>>>(arr, timeStep);
         cudaThreadSynchronize();
 
         ++sample;
