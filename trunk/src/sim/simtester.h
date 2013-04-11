@@ -3,12 +3,13 @@
 #define SIM_TEST_H
 
 #include <vector>
+#include <stdint.h>
 #include "../common.h"
 
-float SimHostTest(const std::vector<_SimBody<float>>& bodies);
-float SimDeviceTest(const std::vector<_SimBody<float>>& bodies);
+uint64_t SimHostTest(const std::vector<_SimBody<float>>& bodies,   uint32_t num_samples);
+uint64_t SimDeviceTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_samples);
 
-bool SimTest(int num_bodies);
-void SimFullTest(int passes);
+bool SimTest(uint32_t num_bodies, uint32_t samples);
+void SimFullTest(uint32_t extra_passes);
 
 #endif //SIM_TEST_H

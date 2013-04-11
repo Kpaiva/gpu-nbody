@@ -8,6 +8,16 @@
 #include "simbody.cu"
 #include "../common.h"
 
+typedef struct
+{
+    SimBody *array;
+    unsigned size;
+} BodyArray;
+
+BodyArray MakeArray(thrust::device_vector<SimBody> &arr);
+void __global__ SimCalc(BodyArray a);
+void __global__ SimTick(BodyArray a, float dt);
+
 class Simulation {
 private:
 	thrust::device_vector<SimBody> bodies_;
