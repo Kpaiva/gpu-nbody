@@ -12,7 +12,7 @@
 
 int main(int argc, char* argv[]) {
 #if IS_TESTING
-	SimFullTest(5);
+	SimFullTest(10);
 #else
 	Simulation& simulation = Simulation::GetInstance();
 	if(!simulation.Setup(argc, argv))
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 	return 1;
 }
 
-#else //WINDOWS NO SIMULATION
+#else //WINDOWS GFX
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

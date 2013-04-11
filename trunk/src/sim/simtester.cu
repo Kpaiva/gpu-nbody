@@ -7,7 +7,9 @@
 #include "simbody.cu"
 #include "simulation.h"
 #include "simtester.h"
+
 #if IS_TESTING
+
 #include <cuda_runtime.h>
 #include <thrust/device_vector.h>
 
@@ -159,5 +161,6 @@ void SimFullTest(uint32_t extra_passes)
 	else 
 		std::cout << success << " tests failed!" << std::endl;	
 }
+
 #endif IS_TESTING
 #endif //SIM_TEST_H

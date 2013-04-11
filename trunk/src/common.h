@@ -4,8 +4,9 @@
 #ifndef _COMMON_H_
 #define _COMMON_H_
 
-#define IS_TESTING 1
-
+//Whether or not to test the kernel with valid host code
+#define IS_TESTING 0
+//Determines if in simulation, non simulation NOT supported.
 #define IS_SIMULATION 1
 //Amount of samples before average is output on screen.
 #define SAMPLE_RATE 1000
