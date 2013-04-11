@@ -1,51 +1,33 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="win">
-      <UniqueIdentifier>{415b5643-1114-40e0-a1a3-1d74b1cc9c06}</UniqueIdentifier>
-    </Filter>
     <Filter Include="sim">
-      <UniqueIdentifier>{6b3dde4e-bc4d-42a1-8b75-1a8f1efce989}</UniqueIdentifier>
+      <UniqueIdentifier>{6ba46c08-c6fc-4957-8207-e0ec38f3a1ea}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CudaCompile Include="..\..\src\sim\simbody.cu">
+      <Filter>sim</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\src\sim\simulation.cu">
+      <Filter>sim</Filter>
+    </CudaCompile>
+    <CudaCompile Include="..\..\src\sim\simtester.cu">
+      <Filter>sim</Filter>
+    </CudaCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\sim\simulation.h">
+      <Filter>sim</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\common.h" />
+    <ClInclude Include="..\..\src\timer.h" />
+    <ClInclude Include="..\..\src\sim\simtester.h">
+      <Filter>sim</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\timer.cpp" />
-    <ClCompile Include="..\..\src\win\imagemanager.cpp">
-      <Filter>win</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\src\timer.h" />
-    <ClInclude Include="..\..\src\common.h" />
-    <ClInclude Include="..\..\src\sim\simulation.h">
-      <Filter>sim</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\sim\simbody.cu">
-      <Filter>sim</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\win\body.h">
-      <Filter>win</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\win\bodymanager.h">
-      <Filter>win</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\win\game.h">
-      <Filter>win</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\win\imagemanager.h">
-      <Filter>win</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\sim\simulation.cu">
-      <Filter>sim</Filter>
-    </None>
-    <None Include="..\..\src\win\bodymanager.cu">
-      <Filter>win</Filter>
-    </None>
-    <None Include="..\..\src\win\game.cu">
-      <Filter>win</Filter>
-    </None>
   </ItemGroup>
 </Project>
