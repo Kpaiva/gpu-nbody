@@ -6,10 +6,18 @@
 
 #include "sim/simulation.h"
 
+#if IS_TESTING
+#include "sim/simtester.h"
+#endif
+
 int main(int argc, char* argv[]) {
+#if IS_TESTING
+	SimFullTest(10);
+#else
 	Simulation& simulation = Simulation::GetInstance();
 	if(!simulation.Setup(argc, argv))
 		return simulation.Run();
+#endif
 	return 1;
 }
 
