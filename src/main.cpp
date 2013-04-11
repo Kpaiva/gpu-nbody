@@ -6,19 +6,7 @@
 
 #include "sim/simulation.h"
 
-#if IS_LINUX
 int main(int argc, char* argv[]) {
-#else
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
-	char** argv = __argv;
-	int argc = __argc;
-	//Setup a console for our windows application.
-	AllocConsole();
-	freopen("CONOUT$", "w", stdout);
-#endif
 	Simulation& simulation = Simulation::GetInstance();
 	if(!simulation.Setup(argc, argv))
 		return simulation.Run();
