@@ -22,13 +22,22 @@ void __global__ SimCalc(BodyArray a)
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < a.size)
     {
-        a.array[idx].ResetForce();
-
+        //a.array[idx].ResetForce();
+		a.array[idx].Force = vec2_t();
+		
         for (size_t j = 0; j < a.size; ++j)
         {
             if (idx != j)
             {
-                a.array[idx].AddForce(a.array[j]);
+                //a.array[idx].AddForce(a.array[j]);
+				//no more function overhead and register memory
+				float dx = a.array[j].Position.x - a.array[idx].Position.x;
+				float dy = a.array[j].Position.y - a.array[idx].Position.y;
+				float r = sqrt(dx*dx + dy*dy);
+				float G = 6.67384f * pow(10.0f, -11.0f);
+				float F = (G*a.array[idx].Mass*a.array[j].Mass)/(r*r);
+				a.array[idx].Force.x += F * (dx / r);
+				a.array[idx].Force.y += F * (dy / r);
             }
         }
     }
@@ -39,11 +48,16 @@ void __global__ SimTick(BodyArray a, float dt)
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < a.size)
     {
-        a.array[idx].Tick(dt);
+        //a.array[idx].Tick(dt);
+		float mass = a.array[idx].Mass;
+		a.array[idx].Velocity.x += dt * (a.array[idx].Force.x / mass);
+		a.array[idx].Velocity.y += dt * (a.array[idx].Force.y / mass);
+		a.array[idx].Position.x += dt * a.array[idx].Velocity.x;
+		a.array[idx].Position.y += dt * a.array[idx].Velocity.y;
     }
 }
 
-Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0) { }
+Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0), maxResidentThreads_(0) { }
 
 Simulation &Simulation::GetInstance(void)
 {
@@ -111,10 +125,12 @@ int Simulation::Setup(int argc, char *argv[])
 
     numBlocks_ = (bodies_.size() + max_threads - 1) / max_threads;
     numThreads_ = max_threads;
+	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
 
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
-              "\tThreads: " << numThreads_ << std::endl;
+              "\tThreads: " << numThreads_ << std::endl <<
+			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
 }
@@ -134,11 +150,13 @@ int Simulation::Run(void)
     BodyArray arr = MakeArray(bodies_);
     while (running_)
     {
-        SimCalc <<< numBlocks_, numThreads_>>>(arr);
+		float threads = maxResidentThreads_ / numBlocks_;
+		
+        SimCalc <<< numBlocks_, threads>>>(arr);
         //Ensure that we have done all calculations before we move on to tick.
         cudaThreadSynchronize();
 
-        SimTick <<< numBlocks_, numThreads_>>>(arr, timeStep);
+        SimTick <<< numBlocks_, threads>>>(arr, timeStep);
         //Ensure that we have ticked all before we move to calculate the average.
         cudaThreadSynchronize();
 

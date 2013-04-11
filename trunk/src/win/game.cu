@@ -7,24 +7,30 @@
 
 using namespace sf;
 
+// looks okay, no need to change
 Game::Game(void) :
 	center_(0.0, 0.0) {
 }
+
+// looks okay, no need to change
 Game::~Game(void)
 {
 	app_.Close();	
 }
 
+// looks okay, no need to change
 Game& Game::GetInstance() {
 	static Game self;
 	return self;
 }
 
+// looks okay, no need to change
 void Game::Init() {
 	SetFullscreen(false);
 	app_.SetFramerateLimit(FRAMERATE);
 
 	ImageManager& manager = ImageManager::GetInstance();
+	/*
 	manager.LoadImage("images/earth.png", "earth.gif");
 	manager.LoadImage("images/sun.png", "sun.gif");
 	manager.LoadImage("images/saturn.png", "saturn.gif");
@@ -42,14 +48,39 @@ void Game::Init() {
 	manager.LoadImage("images/rebel_cruiser.png", "rebel_cruiser.gif");
 	manager.LoadImage("images/squirrel.png", "squirrel.gif");
 	manager.LoadImage("images/star.png", "star.gif");
-	manager.LoadImage("images/star_destroyer.png", "star_destroyer.gif");
+	manager.LoadImage("images/star_destroyer.gif", "star_destroyer.gif");
 	manager.LoadImage("images/blackhole.png", "blackhole.gif");
 	manager.LoadImage("images/asteroid.png", "asteroid.gif");
 	manager.LoadImage("images/acorn3.png", "acorn3.gif");
 	manager.LoadImage("images/acorn-1.png", "acorn-1.gif");
 	manager.LoadImage("images/squirrel.png", "squirrel.gif");
 	manager.LoadImage("images/ninjasquirrel_red.png", "ninjasquirrel_red.gif");
+	*/
 	
+	manager.LoadImage("earth.png", "earth.gif");
+	manager.LoadImage("sun.png", "sun.gif");
+	manager.LoadImage("saturn.png", "saturn.gif");
+	manager.LoadImage("uranus.png", "uranus.gif");
+	manager.LoadImage("venus.png", "venus.gif");
+	manager.LoadImage("pluto.png", "pluto.gif");
+	manager.LoadImage("jupiter.png", "jupiter.gif");
+	manager.LoadImage("mars.png", "mars.gif");
+	manager.LoadImage("mercury.png", "mercury.gif");
+	manager.LoadImage("neptune.png", "neptune.gif");
+	manager.LoadImage("blackhole.png", "blackhole.gif");
+	manager.LoadImage("death_star.png", "death_star.gif");
+	manager.LoadImage("endor.png", "endor.gif");
+	manager.LoadImage("ninjasquirrel_red.png", "ninjasquirrel_red.gif");
+	manager.LoadImage("rebel_cruiser.png", "rebel_cruiser.gif");
+	manager.LoadImage("squirrel.png", "squirrel.gif");
+	manager.LoadImage("star.png", "star.gif");
+	manager.LoadImage("star_destroyer.png", "star_destroyer.gif");
+	manager.LoadImage("blackhole.png", "blackhole.gif");
+	manager.LoadImage("asteroid.png", "asteroid.gif");
+	manager.LoadImage("acorn3.png", "acorn3.gif");
+	manager.LoadImage("acorn-1.png", "acorn-1.gif");
+	manager.LoadImage("squirrel.png", "squirrel.gif");
+	manager.LoadImage("ninjasquirrel_red.png", "ninjasquirrel_red.gif");
 #ifdef _DEBUG
 	showFps_ = showTimer_ = true;
 #else
@@ -57,6 +88,7 @@ void Game::Init() {
 #endif
 }
 
+// looks okay, no need to change
 void Game::SetFullscreen(bool full)
 {
 	if (app_.IsOpened())
@@ -78,6 +110,7 @@ void Game::SetFullscreen(bool full)
 	}
 }
 
+// might want to display the CUDA relevant information (# of blocks/threads, samples, bodies, etc.)
 void Game::DrawDebug(void)
 {
 	static char c_fpsStr[8] = "fps : ";
@@ -108,6 +141,7 @@ void Game::DrawDebug(void)
 	}	
 }
 
+// main portion of program that needs to be changed
 int Game::Run(const char* argv)
 {
 	running_ = true;	
@@ -170,7 +204,7 @@ int Game::Run(const char* argv)
 				x = x * r / bm.ZoomLevel();
 				y = y * r / bm.ZoomLevel();
 				bm.AddBody(SimBody(x, y, 0, 0, 5.974e24));
-				bm.AddBodySprite(_Body(ImageManager::GetInstance().GetImage("earth.gif")));
+				bm.AddBodySprite(_Body(ImageManager::GetInstance().GetImage("earth.png")));
 
 			}
 			else if(event.Type == Event::MouseButtonPressed && event.MouseButton.Button == sf::Mouse::Right) {
@@ -219,6 +253,7 @@ int Game::Run(const char* argv)
 	return EXIT_SUCCESS;
 }
 
+// looks okay, no need to change
 sf::RenderWindow& Game::GetApp() {
 	return app_;
 }

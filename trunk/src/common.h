@@ -8,7 +8,7 @@
 //Amount of samples before average is output on screen.
 #define SAMPLE_RATE 1000
 //Time to run the simulation in seconds.
-#define TIME_TO_LIVE 240
+#define TIME_TO_LIVE 60
 //Whether or not to use double precision.
 #define USE_DOUBLE_PRECISION 0
 
