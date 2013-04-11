@@ -9,7 +9,26 @@
 
 float SimHostTest(const std::vector<_SimBody<float>>& bodies)
 {
-	return 1.0;
+	std::vector<_SimBody<float>> bodies_ = bodies;
+	size_t i = 0;
+	size_t j = 0;
+	for(int sample = 0; sample < 128; ++sample){
+		for(i = 0; i < bodies_.size(); ++i) {
+			bodies_[i].ResetForce();
+			for(j = 0; j < bodies_.size(); ++j) {
+				if(i != j) bodies_[i].AddForce(bodies_[j]);			
+			}
+		}
+
+		for(i = 0; i < bodies_.size(); ++i) {		
+			bodies_[i].Tick(25000.0f);		
+		}
+	}
+	float checksum = 0.0f;
+	for(i = 0; i < bodies_.size(); ++i) {		
+			checksum += bodies_[i].Position.x + bodies_[i].Position.y;
+	}
+	return checksum;
 }
 
 float SimDeviceTest(const std::vector<_SimBody<float>>& bodies)
