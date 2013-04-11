@@ -5,12 +5,6 @@
 #include "..\timer.h"
 #include <cuda_runtime.h>
 
-typedef struct
-{
-    SimBody *array;
-    unsigned size;
-} BodyArray;
-
 BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
 {
     BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };

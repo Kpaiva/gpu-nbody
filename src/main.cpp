@@ -12,7 +12,7 @@
 
 int main(int argc, char* argv[]) {
 #if IS_TESTING
-	SimFullTest(10);
+	SimFullTest(5);
 #else
 	Simulation& simulation = Simulation::GetInstance();
 	if(!simulation.Setup(argc, argv))

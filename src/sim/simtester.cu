@@ -5,14 +5,20 @@
 #include <iostream>
 #include <vector>
 #include "simbody.cu"
+#include "simulation.h"
 #include "simtester.h"
 
-float SimHostTest(const std::vector<_SimBody<float>>& bodies)
+#include <cuda_runtime.h>
+#include <thrust/device_vector.h>
+
+#include <stdint.h>
+
+uint64_t SimHostTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_samples)
 {
 	std::vector<_SimBody<float>> bodies_ = bodies;
 	size_t i = 0;
 	size_t j = 0;
-	for(int sample = 0; sample < 128; ++sample){
+	for(uint32_t sample(0); sample != num_samples; ++sample) {	
 		for(i = 0; i < bodies_.size(); ++i) {
 			bodies_[i].ResetForce();
 			for(j = 0; j < bodies_.size(); ++j) {
@@ -24,69 +30,122 @@ float SimHostTest(const std::vector<_SimBody<float>>& bodies)
 			bodies_[i].Tick(25000.0f);		
 		}
 	}
-	float checksum = 0.0f;
+
+	//Compute the checksum
+	uint64_t checksum = 0;
 	for(i = 0; i < bodies_.size(); ++i) {		
-			checksum += bodies_[i].Position.x + bodies_[i].Position.y;
+		checksum += (uint32_t)bodies_[i].Position.x;
+		checksum += (uint32_t)bodies_[i].Position.y;
 	}
 	return checksum;
 }
 
-float SimDeviceTest(const std::vector<_SimBody<float>>& bodies)
+uint64_t SimDeviceTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_samples)
 {
-	return 1.0;
+	thrust::device_vector<_SimBody<float>> d_bodies;
+	thrust::host_vector<_SimBody<float>> h_bodies;
+	float timeStep = 25000.0f;
+
+	d_bodies = bodies;
+
+	int device;
+    cudaDeviceProp prop;
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess)
+    {
+        std::cout << cudaGetErrorString(err) << std::endl;
+        return 1;
+    }
+    err = cudaGetDevice(&device);
+    if (err != cudaSuccess)
+    {
+        std::cout << "Error getting CUDA device... aborting." << std::endl;
+        return 1;
+    }
+    err = cudaGetDeviceProperties(&prop, device);
+    if (err == cudaErrorInvalidDevice)
+    {
+        std::cout << "Invalid CUDA device found... aborting." << std::endl;
+        return 1;
+    }
+    int max_threads = prop.maxThreadsDim[0];
+
+	int numBlocks_ = (d_bodies.size() + max_threads - 1) / max_threads;
+	int maxResidentThreads_ = max_threads;
+
+	int threads = maxResidentThreads_ / numBlocks_;
+	BodyArray arr = MakeArray(d_bodies);
+
+	for(uint32_t sample(0); sample != num_samples; ++sample) {	
+		SimCalc <<<numBlocks_, threads>>>(arr);
+		//Ensure that we have done all calculations before we move on to tick.
+		cudaThreadSynchronize();
+
+		SimTick <<<numBlocks_, threads>>>(arr, timeStep);
+		//Ensure that we have ticked all before we move to calculate the average.
+		cudaThreadSynchronize();
+	}
+
+	h_bodies = d_bodies;
+
+	//Compute the checksum.
+	uint64_t checksum = 0;
+	for(unsigned i = 0; i < h_bodies.size(); ++i) {
+		checksum += (uint32_t)h_bodies[i].Position.x;
+		checksum += (uint32_t)h_bodies[i].Position.y;
+	}
+	return checksum;
 }
 
-bool SimTest(int num_bodies)
+bool SimTest(uint32_t num_bodies, uint32_t samples)
 {
 	std::vector<_SimBody<float>> bodies;
-	unsigned seed = unsigned(time(NULL));
+	uint32_t seed = (uint32_t)time(NULL);
 	srand(seed);
 	
-	//std::cout << "Testing host/device with " << num_bodies << " bodies." << std::endl;	
 	bodies.reserve(num_bodies);
-	//std::cout << "Setting up bodies with seed " << seed << "... ";
 
-    for (unsigned i = 0; i < num_bodies; ++i) {
+    for (uint32_t i = 0; i < num_bodies; ++i) {
 		bodies.push_back(_SimBody<float>(
-						random(1.0E11f, 3.0E11f),
-						random(-6.0E11f, 9.0E11f),
-						random(-1000.0f, 1000.0f),
-						random(-1000.0f, 1000.0f),
-						random(1.0E9f, 1.0E31f)));
+						random(-16384.0f, 16384.0f),
+						random(-16384.0f, 16384.0f),
+						random(-16384.0f, 16384.0f),
+						random(-16384.0f, 16384.0f),
+						random(-16384.0f, 16384.0f)));
 	}
-	//std::cout << "done." << std::endl;
 
-	float host_ans = 0.0f, device_ans = 0.0f, diff = 0.0f;
+	uint64_t host_ans = 0, device_ans = 0, diff = 0;
 
-	//std::cout << "Testing host ... ";
-	host_ans = SimHostTest(bodies);
-	//std::cout << "done." << std::endl;
+	host_ans = SimHostTest(bodies, samples);
+	device_ans = SimDeviceTest(bodies, samples);
 
-	//std::cout << "Testing device ... ";
-	device_ans = SimDeviceTest(bodies);
-	//std::cout << "done." << std::endl;
+	diff = host_ans-device_ans;
 
-	diff = abs(host_ans-device_ans);
-
-	/*std::cout << "Results:" << std::endl <<
-		"Host  : " << host_ans << std::endl <<
-		"Device: " << device_ans << std::endl <<
-		"Diff  : " << diff << std::endl <<
-		"Pass  : " << (diff < 0.5f ? "true" : "false") << std::endl;*/
-
-	return diff < 0.5f;
+	return diff == 0;
 }
 
-void SimFullTest(int passes) 
+void SimFullTest(uint32_t extra_passes) 
 {
-	#define TEST(x,i) { bool __ans = SimTest((x)); std::cout << "Test #" << (i) << (__ans ? " passed." : " failed.") << std::endl; }
+	uint32_t success = 0;
+	auto do_test = [](uint32_t n, uint32_t s)->bool{
+		std::cout << "Testing " << n << " bodies (" << s << " samples)...";
+		bool answer = SimTest(n, s);
+		std::cout << (answer ? " passed." : " failed.") << std::endl;
+		return answer;
+	};
 
-	TEST(4,0);
-	for (unsigned i = 1; i <= passes; ++i) {
-		TEST(i*100,i);
+	success += !do_test(100, 128);
+	success += !do_test(200, 128);
+	success += !do_test(100, 64);
+
+	for(uint32_t i(0); i != extra_passes; ++i) {
+		success += !do_test((uint32_t)random(50,250),(uint32_t)random(64,128));
 	}
 
-	#undef TEST
+	if(success == 0) 
+		std::cout << "All tests passed!" << std::endl;	
+	else 
+		std::cout << success << " tests failed!" << std::endl;	
 }
 
 #endif //SIM_TEST_H
