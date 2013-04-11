@@ -11,10 +11,12 @@
 template <typename T>
 class _SimBody {
 private:
+	/*
 	CUDA_CALLABLE_MEMBER T ComputeGC(T m1, T m2, T d) {
 		const T G = 6.67384f * pow(10.0f, -11.0f);
 		return (G*m1*m2)/(d*d);
 	}
+	*/
 public:
 	T Mass;
 	vec2_t Force;
@@ -24,6 +26,7 @@ public:
 	_SimBody(T px = 0.0f, T py = 0.0f, T vx = 0.0f, T vy = 0.0f, T mass = 0.0f) :
 		Mass(mass), Velocity(vx,vy), Position(px,py), Force() { }
 
+	/*	
 	CUDA_CALLABLE_MEMBER void Tick(T dt) {
 		Velocity.x += dt * (Force.x / Mass);
 		Velocity.y += dt * (Force.y / Mass);
@@ -43,6 +46,7 @@ public:
 	CUDA_CALLABLE_MEMBER void ResetForce() {
 		Force = vec2_t();
 	}
+	*/
 };
 
 #endif //BODY_H
