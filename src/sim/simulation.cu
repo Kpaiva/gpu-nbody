@@ -150,13 +150,14 @@ int Simulation::Run(void)
     BodyArray arr = MakeArray(bodies_);
     while (running_)
     {
-		float threads = maxResidentThreads_ / numBlocks_;
+		int threads;
+		numBlocks_ > 1 ? threads = maxResidentThreads_ / numBlocks_ : threads = numThreads_;
 		
-        SimCalc <<< numBlocks_, threads>>>(arr);
+        SimCalc <<< numBlocks_, numThreads_>>>(arr);
         //Ensure that we have done all calculations before we move on to tick.
         cudaThreadSynchronize();
 
-        SimTick <<< numBlocks_, threads>>>(arr, timeStep);
+        SimTick <<< numBlocks_, numThreads_>>>(arr, timeStep);
         //Ensure that we have ticked all before we move to calculate the average.
         cudaThreadSynchronize();
 
