@@ -2,16 +2,14 @@
 #ifndef SIM_TEST_H
 #define SIM_TEST_H
 
+#include "simtester.h"
+#include "simulation.h"
+
 #include <iostream>
 #include <vector>
-#include "simbody.cu"
-#include "simulation.h"
-#include "simtester.h"
-
-#include <cuda_runtime.h>
-#include <thrust/device_vector.h>
-
 #include <stdint.h>
+
+#include <thrust/device_vector.h>
 
 uint64_t SimHostTest(const std::vector<_SimBody<float>>& bodies, uint32_t num_samples)
 {
