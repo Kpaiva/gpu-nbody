@@ -105,6 +105,7 @@ bool SimTest(uint32_t num_bodies, uint32_t samples, float* percentage)
 	uint32_t seed = (uint32_t)time(NULL);
 	srand(seed);
 	
+	if(percentage) *percentage = 0.f;
 	bodies.reserve(num_bodies);
 
     for (uint32_t i = 0; i < num_bodies; ++i) {
@@ -124,14 +125,14 @@ bool SimTest(uint32_t num_bodies, uint32_t samples, float* percentage)
 	device = SimDeviceTest(bodies, samples);
 	host   = SimHostTest(bodies, samples);
 	
-	if(device.size() != host.size())
+	if(device.size() != num_bodies ||
+	   host.size() != num_bodies)
 		return false;
 
 	unsigned equal = 0;
 	auto d_it = device.begin();
 	auto h_it = host.begin();
-	while(d_it != device.end() && h_it != host.end())
-	{
+	while(d_it != device.end() && h_it != host.end()) {
 		if((*d_it)==(*h_it)) ++equal;
 		++d_it; ++h_it;
 	}
