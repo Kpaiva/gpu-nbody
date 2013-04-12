@@ -116,9 +116,7 @@ bool SimTest(uint32_t num_bodies, uint32_t samples, float* percentage)
 							random(-1000.0f, 1000.0f),
 							random(1.0E9f, 1.0E24f)));
 	}
-
-	uint64_t host_ans = 0, device_ans = 0, diff = 0;
-
+	
 	std::vector<SimBody> device;
 	std::vector<SimBody> host;
 
