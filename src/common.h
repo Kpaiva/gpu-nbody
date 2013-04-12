@@ -17,7 +17,7 @@
 
 #if IS_TESTING
 #define EPSILON (1.0)
-#define ACCURACY (0.999999)
+#define ACCURACY (0.99)
 #define USE_DOUBLE_PRECISION 1
 #endif
 

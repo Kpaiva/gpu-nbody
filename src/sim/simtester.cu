@@ -101,7 +101,7 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
 
 bool SimTest(uint32_t num_bodies, uint32_t samples, float* percentage)
 {
-	std::vector<_SimBody<double>> bodies;
+	std::vector<SimBody> bodies;
 	uint32_t seed = (uint32_t)time(NULL);
 	srand(seed);
 	
