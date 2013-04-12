@@ -5,7 +5,7 @@
 #define _COMMON_H_
 
 //Whether or not to test the kernel with valid host code
-#define IS_TESTING 0
+#define IS_TESTING 1
 //Determines if in simulation, non simulation NOT supported.
 #define IS_SIMULATION 1
 //Amount of samples before average is output on screen.
@@ -15,8 +15,15 @@
 //Whether or not to use double precision.
 #define USE_DOUBLE_PRECISION 0
 
+#if IS_TESTING
+#define EPSILON (1.0)
+#define ACCURACY (0.999999)
+#define USE_DOUBLE_PRECISION 1
+#endif
+
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 
 template <typename T>
 class _SimBody;
@@ -48,7 +55,9 @@ static double random(double min, double max) { return (min + (rand() % (int)(max
 #else
 typedef vec2<float> vec2_t;
 typedef _SimBody<float> SimBody;
-static float random(float min, float max) { return (min + (rand() % (int)(max - min + 1))); }
+static float random(float min, float max) {
+	return min + (floorf((float(rand())/RAND_MAX) * 10)/10) * (max-min);
+}
 #endif
 
 #endif //_COMMON_H_
