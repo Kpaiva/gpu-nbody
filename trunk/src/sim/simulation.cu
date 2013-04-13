@@ -115,18 +115,23 @@ int Simulation::Setup(int argc, char *argv[])
         std::cout << "Invalid CUDA device found... aborting." << std::endl;
         return 1;
     }
-    int nThreads = prop.maxThreadsDim[0];
+    int maxThreads = prop.maxThreadsDim[0]/4;
+	int maxBlocks = prop.major > 2 ? 16 : 8;
 	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
 
-	numBlocks_ = (bodies_.size() + nThreads - 1) / nThreads;
-	numThreads_ = nThreads;
+	numBlocks_ = (bodies_.size() + maxThreads - 1) / maxThreads;
+	numThreads_ = maxThreads;
 
-	prop.major > 2 ? blocks_ = 16 : blocks_ = 8;
+	while(numBlocks_ > maxBlocks) {
+		numThreads_ *= 2;
+		numBlocks_ /= 2;
+	}
+	//ensure even
+	numBlocks_ = (numBlocks_+1) & ~1;
 
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
               "\tThreads: " << numThreads_ << std::endl <<
-			  "\tMax Resident Blocks: " << blocks_ << std::endl <<
 			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
