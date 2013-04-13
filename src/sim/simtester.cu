@@ -71,6 +71,7 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
 
 	//int threads = maxResidentThreads_ / numBlocks_;
 	BodyArray arr = MakeArray(d_bodies);
+	int shared = arr.size * sizeof(SimBody);
 
 	//my stuff
 	int threads;
@@ -84,7 +85,7 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
 
 	for(uint32_t sample(0); sample != num_samples; ++sample) {	
 		//SimCalc <<<numBlocks_, threads>>>(arr);
-		SimCalc <<< blocks, threads>>>(arr);
+		SimCalc <<< blocks, threads, shared>>>(arr);
 		//Ensure that we have done all calculations before we move on to tick.
 		cudaThreadSynchronize();
 
