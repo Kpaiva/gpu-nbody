@@ -84,10 +84,10 @@ int Simulation::Setup(int argc, char *argv[])
         return 1;
     }
     std::cout << "Setting up " << num_bodies << " bodies." << std::endl;
-    srand(time(NULL));
+    srand((unsigned)time(NULL));
 
 	bodies_ = new thrust::device_vector<SimBody>(num_bodies);
-    for (unsigned i = 0; i < num_bodies; ++i)
+    for (unsigned i = 0; i < (unsigned)num_bodies; ++i)
         bodies_->push_back(SimBody(
                               random(1.0E11f, 3.0E11f),
                               random(-6.0E11f, 9.0E11f),
@@ -123,7 +123,7 @@ int Simulation::Setup(int argc, char *argv[])
 	numBlocks_ = (bodies_->size() + maxThreads - 1) / maxThreads;
 	numThreads_ = maxThreads;
 
-	while(numBlocks_ > maxBlocks) {
+	while(numBlocks_ > (unsigned)maxBlocks) {
 		numThreads_ *= 2;
 		numBlocks_ /= 2;
 	}
