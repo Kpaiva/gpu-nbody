@@ -179,9 +179,8 @@ int Simulation::Run(void)
             running_ = false;
         }
     }
-	cudaDeviceReset();
-
 	delete bodies_;
+	cudaDeviceReset();	
 
     timer.stop();
     std::cout << sample << " Samples taken avg. " << std::fixed
