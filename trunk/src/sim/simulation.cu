@@ -116,27 +116,21 @@ int Simulation::Setup(int argc, char *argv[])
         std::cout << "Invalid CUDA device found... aborting." << std::endl;
         return 1;
     }
-    int maxThreads = prop.maxThreadsDim[0]/4;
 	int maxBlocks = prop.major > 2 ? 16 : 8;
-	blocks_ = prop.major > 2 ? 16 : 8;
-	int maxResidentThreads = prop.maxThreadsPerMultiProcessor;
-	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
 
-	numBlocks_ = (bodies_->size() + maxThreads - 1) / maxThreads;
-	numThreads_ = maxThreads;
+	numBlocks_ = maxBlocks;
+	numThreads_ = (prop.maxThreadsPerMultiProcessor > bodies_->size() ? (bodies_->size()+maxBlocks-1) / maxBlocks : prop.maxThreadsPerMultiProcessor / maxBlocks);
 
-	while(numBlocks_ > (unsigned)maxBlocks) {
-		numThreads_ *= 2;
-		numBlocks_ /= 2;
-	}
-	//ensure even
-	numBlocks_ = (numBlocks_+1) & ~1;
+	while(numBlocks_ * numThreads_ < bodies_->size())
+		numThreads_ <<= 1;
+
+	numThreads_ = (numThreads_ + 1) & ~1;
 
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
               "\tThreads: " << numThreads_ << std::endl <<
 			  "\tMax Blocks: " << ((prop.major > 2) ? 16 : 8) << std::endl <<
-			  "\tMax Resident Threads: " << maxResidentThreads << std::endl;
+			  "\tMax Resident Threads: " << prop.maxThreadsPerMultiProcessor << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
 }
@@ -153,16 +147,15 @@ int Simulation::Run(void)
     if (sampleCount_ > 0)
         std::cout << "Running test for " << sampleCount_ << " samples..." << std::endl;
 
-	int threads = (maxResidentThreads_ > arr.size ? arr.size / blocks_ : maxResidentThreads_ / blocks_);
-	std::cout << "Blocks: " << blocks_ << " Threads: " << threads << std::endl;
 		
     BodyArray arr = MakeArray(bodies_);
+
     while (running_)
     {
-		SimCalc <<< blocks_, threads>>>(arr);
+		SimCalc <<<numBlocks_, numThreads_>>>(arr);
 		//SimCalc <<<numBlocks_, numThreads_>>>(arr);
 		cudaThreadSynchronize();
-		SimTick <<<blocks_, threads>>>(arr, timeStep);
+		SimTick <<<numBlocks_, numThreads_>>>(arr, timeStep);
 		//SimTick <<<numBlocks_, numThreads_>>>(arr, timeStep);
         cudaThreadSynchronize();
 
