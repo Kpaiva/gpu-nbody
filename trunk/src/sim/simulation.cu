@@ -120,6 +120,7 @@ int Simulation::Setup(int argc, char *argv[])
 	int maxBlocks = prop.major > 2 ? 16 : 8;
 	blocks_ = prop.major > 2 ? 16 : 8;
 	int maxResidentThreads = prop.maxThreadsPerMultiProcessor;
+	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
 
 	numBlocks_ = (bodies_->size() + maxThreads - 1) / maxThreads;
 	numThreads_ = maxThreads;
