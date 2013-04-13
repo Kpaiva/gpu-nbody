@@ -7,9 +7,9 @@
 
 #include <cstdint>
 
-BodyArray MakeArray(thrust::device_vector<SimBody>* arr)
+BodyArray MakeArray(thrust::device_vector<SimBody> arr)
 {
-    BodyArray ba = { thrust::raw_pointer_cast(&(*arr->begin())), arr->size() };
+    BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
 }
 
@@ -86,9 +86,9 @@ int Simulation::Setup(int argc, char *argv[])
     std::cout << "Setting up " << num_bodies << " bodies." << std::endl;
     srand((unsigned)time(NULL));
 
-	bodies_ = new thrust::device_vector<SimBody>(num_bodies);
+	bodies_.reserve(num_bodies);
     for (unsigned i = 0; i < (unsigned)num_bodies; ++i)
-        bodies_->push_back(SimBody(
+        bodies_.push_back(SimBody(
                               random(1.0E11f, 3.0E11f),
                               random(-6.0E11f, 9.0E11f),
                               random(-1000.0f, 1000.0f),
@@ -119,10 +119,12 @@ int Simulation::Setup(int argc, char *argv[])
 	int maxBlocks = prop.major > 2 ? 16 : 8;
 
 	numBlocks_ = maxBlocks;
-	numThreads_ = (prop.maxThreadsPerMultiProcessor > bodies_->size() ? (bodies_->size()+maxBlocks-1) / maxBlocks : prop.maxThreadsPerMultiProcessor / maxBlocks);
+	numThreads_ = (prop.maxThreadsPerMultiProcessor > bodies_.size() ? (bodies_.size()+maxBlocks-1) / maxBlocks : prop.maxThreadsPerMultiProcessor / maxBlocks);
 
-	while(numBlocks_ * numThreads_ < bodies_->size())
+	while(numBlocks_ * numThreads_ < bodies_.size())
 		numThreads_ <<= 1;
+	while(numBlocks_ * numThreads_ > bodies_.size())
+		numThreads_--;
 
 	numThreads_ = (numThreads_ + 1) & ~1;
 
@@ -178,7 +180,6 @@ int Simulation::Run(void)
             running_ = false;
         }
     }
-	delete bodies_;
 	cudaDeviceReset();	
 
     timer.stop();

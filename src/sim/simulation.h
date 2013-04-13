@@ -20,13 +20,13 @@ typedef struct
 	#define _T float
 #endif
 
-BodyArray MakeArray(thrust::device_vector<SimBody>* arr);
+BodyArray MakeArray(thrust::device_vector<SimBody> arr);
 void __global__ SimCalc(BodyArray a);
 void __global__ SimTick(BodyArray a, _T dt);
 
 class Simulation {
 private:
-	thrust::device_vector<SimBody>* bodies_;
+	thrust::device_vector<SimBody> bodies_;
 	bool running_;
 	int sampleCount_;
 	unsigned numBlocks_;

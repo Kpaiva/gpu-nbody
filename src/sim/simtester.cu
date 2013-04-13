@@ -64,13 +64,15 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
         std::cout << "Invalid CUDA device found... aborting." << std::endl;
         return h_bodies;
     }
-	BodyArray arr = MakeArray(&d_bodies);
+	BodyArray arr = MakeArray(d_bodies);
 
 	int maxBlocks = prop.major > 2 ? 16 : 8;
 	int threads = (prop.maxThreadsPerMultiProcessor > arr.size ? (arr.size+maxBlocks-1) / maxBlocks : prop.maxThreadsPerMultiProcessor / maxBlocks);
 
 	while(maxBlocks * threads < arr.size)
 		threads <<= 1;
+	while(maxBlocks * threads > arr.size)
+		threads--;
 
 	threads = (threads + 1) & ~1;
 
