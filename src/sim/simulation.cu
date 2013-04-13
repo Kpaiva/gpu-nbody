@@ -197,7 +197,7 @@ int Simulation::Run(void)
         SimTick <<< numBlocks_, threads>>>(arr, timeStep);*/
         //Ensure that we have ticked all before we move to calculate the average.
 
-		maxResidentThreads_ > numThreads_ ? threads = numThreads_ / blocks_ : threads = maxResidentThreads_ / blocks_;
+		(maxResidentThreads_ / blocks_) > numThreads_ ? threads = numThreads_ : threads = maxResidentThreads_ / blocks_;
 
 		//SimCalc <<< blocks_, threads>>>(arr);
 		SimCalc <<< blocks_, threads, shared>>>(arr);
