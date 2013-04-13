@@ -5,83 +5,45 @@
 #include "..\timer.h"
 #include <cuda_runtime.h>
 
+#include <cstdint>
+
 BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
 {
     BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
 }
-	/*
+
 void __global__ SimCalc(BodyArray a)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < a.size)
-    {
-        //a.array[idx].ResetForce();
+    int_fast32_t idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < a.size) {
+		const _T G = 6.67384f * pow(10.0f, -11.0f);
+		//precompute positions at index
+		const _T px = a.array[idx].Position.x;
+		const _T py = a.array[idx].Position.y;
+		//mass at the index
+		const _T M_idx = G*a.array[idx].Mass;
+
 		a.array[idx].Force = vec2_t();
-		
-        for (size_t j = 0; j < a.size; ++j)
-        {
-            if (idx != j)
-            {
-                //a.array[idx].AddForce(a.array[j]);
-				//no more function overhead and register memory
-				float dx = a.array[j].Position.x - a.array[idx].Position.x;
-				float dy = a.array[j].Position.y - a.array[idx].Position.y;
-				float r = sqrt(dx*dx + dy*dy);
-				float G = 6.67384f * pow(10.0f, -11.0f);
-				float F = (G*a.array[idx].Mass*a.array[j].Mass)/(r*r);
+        for (int_fast32_t j(0); j != a.size; ++j) {
+            if (idx != j) {
+				_T dx = a.array[j].Position.x - px;
+				_T dy = a.array[j].Position.y - py;
+				_T r = sqrt(dx*dx + dy*dy);
+				_T F = (M_idx*a.array[j].Mass)/(r*r);
 				a.array[idx].Force.x += F * (dx / r);
 				a.array[idx].Force.y += F * (dy / r);
             }
         }
     }
 }
-*/
 
-
-void __global__ SimCalc(BodyArray a)
-{
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-	int tid = threadIdx.x;
-	extern __shared__ SimBody sa[];
-
-	if (idx>=a.size)
-		return;
-
-	sa[tid] = a.array[idx];
-	__syncthreads();
-
-    //a.array[idx].ResetForce();
-	sa[tid].Force = vec2_t();
-		
-	// start index at current unique thread index relating to grid
-    for (size_t j = 0; j < a.size; ++j)
-    {
-        if (idx != j)
-        {
-            //a.array[idx].AddForce(a.array[j]);
-			//no more function overhead and register memory
-			float dx = a.array[j].Position.x - sa[tid].Position.x;
-			float dy = a.array[j].Position.y - sa[tid].Position.y;
-			float r = sqrt(dx*dx + dy*dy);
-			float G = 6.67384f * pow(10.0f, -11.0f);
-			float F = (G*sa[tid].Mass*a.array[j].Mass)/(r*r);
-			sa[tid].Force.x += F * (dx / r);
-			sa[tid].Force.y += F * (dy / r);
-        }
-		__syncthreads();
-    }
-
-	a.array[idx] = sa[tid];
-}
-
-void __global__ SimTick(BodyArray a, float dt)
+void __global__ SimTick(BodyArray a, _T dt)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < a.size)
     {
-        //a.array[idx].Tick(dt);
-		float mass = a.array[idx].Mass;
+		_T mass = a.array[idx].Mass;
 		a.array[idx].Velocity.x += dt * (a.array[idx].Force.x / mass);
 		a.array[idx].Velocity.y += dt * (a.array[idx].Force.y / mass);
 		a.array[idx].Position.x += dt * a.array[idx].Velocity.x;
@@ -183,24 +145,14 @@ int Simulation::Run(void)
         std::cout << "Running test for " << sampleCount_ << " samples..." << std::endl;
 
     BodyArray arr = MakeArray(bodies_);
-	int shared = arr.size * sizeof(SimBody);
     while (running_)
     {
 		int threads;
-		int blocks;/*
-		numBlocks_ > 1 ? threads = maxResidentThreads_ / numBlocks_ : threads = numThreads_;
-		
-        SimCalc <<< numBlocks_, threads>>>(arr);
-        //Ensure that we have done all calculations before we move on to tick.
-        cudaThreadSynchronize();
-
-        SimTick <<< numBlocks_, threads>>>(arr, timeStep);*/
-        //Ensure that we have ticked all before we move to calculate the average.
-
-		(maxResidentThreads_ / blocks_) > numThreads_ ? threads = numThreads_ : threads = maxResidentThreads_ / blocks_;
+			
+		maxResidentThreads_ > numThreads_ ? threads = numThreads_ / blocks_ : threads = maxResidentThreads_ / blocks_;
 
 		//SimCalc <<< blocks_, threads>>>(arr);
-		SimCalc <<< blocks_, threads, shared>>>(arr);
+		SimCalc <<< blocks_, threads>>>(arr);
 		cudaThreadSynchronize();
 		SimTick <<< blocks_, threads>>>(arr, timeStep);
         cudaThreadSynchronize();

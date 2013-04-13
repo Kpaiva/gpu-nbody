@@ -5,7 +5,7 @@
 #define _COMMON_H_
 
 //Whether or not to test the kernel with valid host code
-#define IS_TESTING 0
+#define IS_TESTING 1
 //Determines if in simulation, non simulation NOT supported.
 #define IS_SIMULATION 1
 //Amount of samples before average is output on screen.
@@ -18,6 +18,7 @@
 #if IS_TESTING
 #define EPSILON (1.0)
 #define ACCURACY (0.99)
+#undef  USE_DOUBLE_PRECISION
 #define USE_DOUBLE_PRECISION 1
 #endif
 

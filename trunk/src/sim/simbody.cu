@@ -13,7 +13,11 @@ class _SimBody {
 private:
 #if IS_TESTING
 	CUDA_CALLABLE_MEMBER T ComputeGC(T m1, T m2, T d) {
+#if USE_DOUBLE_PRECISION
+		const T G = 6.67384 * pow(10.0, -11.0);
+#else
 		const T G = 6.67384f * pow(10.0f, -11.0f);
+#endif
 		return (G*m1*m2)/(d*d);
 	}
 #endif
