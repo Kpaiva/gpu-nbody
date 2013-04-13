@@ -14,9 +14,15 @@ typedef struct
     unsigned size;
 } BodyArray;
 
+#if USE_DOUBLE_PRECISION
+	#define _T double
+#else
+	#define _T float
+#endif
+
 BodyArray MakeArray(thrust::device_vector<SimBody> &arr);
 void __global__ SimCalc(BodyArray a);
-void __global__ SimTick(BodyArray a, float dt);
+void __global__ SimTick(BodyArray a, _T dt);
 
 class Simulation {
 private:
