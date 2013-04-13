@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-BodyArray MakeArray(thrust::device_vector<SimBody> arr)
+BodyArray MakeArray(thrust::device_vector<SimBody>& arr)
 {
     BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
