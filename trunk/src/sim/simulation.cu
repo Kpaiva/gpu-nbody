@@ -118,6 +118,7 @@ int Simulation::Setup(int argc, char *argv[])
     }
     int maxThreads = prop.maxThreadsDim[0]/4;
 	int maxBlocks = prop.major > 2 ? 16 : 8;
+	blocks_ = prop.major > 2 ? 16 : 8;
 	int maxResidentThreads = prop.maxThreadsPerMultiProcessor;
 
 	numBlocks_ = (bodies_->size() + maxThreads - 1) / maxThreads;
@@ -151,13 +152,17 @@ int Simulation::Run(void)
     if (sampleCount_ > 0)
         std::cout << "Running test for " << sampleCount_ << " samples..." << std::endl;
 
+	int threads = (maxResidentThreads_ > arr.size ? arr.size / blocks_ : maxResidentThreads_ / blocks_);
+	std::cout << "Blocks: " << blocks_ << " Threads: " << threads << std::endl;
+		
     BodyArray arr = MakeArray(bodies_);
     while (running_)
     {
-		//SimCalc <<< blocks_, threads>>>(arr);
-		SimCalc <<<numBlocks_, numThreads_>>>(arr);
+		SimCalc <<< blocks_, threads>>>(arr);
+		//SimCalc <<<numBlocks_, numThreads_>>>(arr);
 		cudaThreadSynchronize();
-		SimTick <<<numBlocks_, numThreads_>>>(arr, timeStep);
+		SimTick <<<blocks_, threads>>>(arr, timeStep);
+		//SimTick <<<numBlocks_, numThreads_>>>(arr, timeStep);
         cudaThreadSynchronize();
 
         ++sample;
