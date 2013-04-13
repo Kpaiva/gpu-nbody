@@ -67,9 +67,7 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
     int max_threads = prop.maxThreadsDim[0];
 
 	int numBlocks_ = (d_bodies.size() + max_threads - 1) / max_threads;
-	//int maxResidentThreads_ = max_threads;
 
-	//int threads = maxResidentThreads_ / numBlocks_;
 	BodyArray arr = MakeArray(d_bodies);
 
 	//my stuff
@@ -82,13 +80,11 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
 	maxResidentThreads_ > numThreads ? threads = numThreads / blocks : threads = maxResidentThreads_ / blocks;
 	////
 
-	for(uint32_t sample(0); sample != num_samples; ++sample) {	
-		//SimCalc <<<numBlocks_, threads>>>(arr);
+	for(uint32_t sample(0); sample != num_samples; ++sample) {
 		SimCalc <<< blocks, threads >>>(arr);
 		//Ensure that we have done all calculations before we move on to tick.
 		cudaThreadSynchronize();
 
-		//SimTick <<<numBlocks_, threads>>>(arr, timeStep);
 		SimTick <<< blocks, threads>>>(arr, timeStep);
 		//Ensure that we have ticked all before we move to calculate the average.
 		cudaThreadSynchronize();
