@@ -20,7 +20,7 @@ typedef struct
 	#define _T float
 #endif
 
-BodyArray MakeArray(thrust::device_vector<SimBody> arr);
+BodyArray MakeArray(thrust::device_vector<SimBody>& arr);
 void __global__ SimCalc(BodyArray a);
 void __global__ SimTick(BodyArray a, _T dt);
 
