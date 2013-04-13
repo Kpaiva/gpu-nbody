@@ -55,9 +55,7 @@ static double random(double min, double max) { return (min + (rand() % (int)(max
 #else
 typedef vec2<float> vec2_t;
 typedef _SimBody<float> SimBody;
-static float random(float min, float max) {
-	return min + (floorf((float(rand())/RAND_MAX) * 10)/10) * (max-min);
-}
+static float random(float min, float max) { return (min + (rand() % (int)(max - min + 1))); }
 #endif
 
 #endif //_COMMON_H_
