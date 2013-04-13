@@ -10,7 +10,7 @@ BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
     BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
     return ba;
 }
-
+	/*
 void __global__ SimCalc(BodyArray a)
 {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -35,6 +35,44 @@ void __global__ SimCalc(BodyArray a)
             }
         }
     }
+}
+*/
+
+
+void __global__ SimCalc(BodyArray a)
+{
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+	int tid = threadIdx.x;
+	extern __shared__ SimBody sa[];
+
+	if (idx>=a.size)
+		return;
+
+	sa[tid] = a.array[idx];
+	__syncthreads();
+
+    //a.array[idx].ResetForce();
+	sa[tid].Force = vec2_t();
+		
+	// start index at current unique thread index relating to grid
+    for (size_t j = 0; j < a.size; ++j)
+    {
+        //if (idx != j)
+        //{
+            //a.array[idx].AddForce(a.array[j]);
+			//no more function overhead and register memory
+			float dx = a.array[j].Position.x - sa[tid].Position.x;
+			float dy = a.array[j].Position.y - sa[tid].Position.y;
+			float r = sqrt(dx*dx + dy*dy);
+			float G = 6.67384f * pow(10.0f, -11.0f);
+			float F = (G*sa[tid].Mass*a.array[j].Mass)/(r*r);
+			sa[tid].Force.x += F * (dx / r);
+			sa[tid].Force.y += F * (dy / r);
+        //}
+		__syncthreads();
+    }
+
+	a.array[idx] = sa[tid];
 }
 
 void __global__ SimTick(BodyArray a, float dt)
@@ -145,6 +183,7 @@ int Simulation::Run(void)
         std::cout << "Running test for " << sampleCount_ << " samples..." << std::endl;
 
     BodyArray arr = MakeArray(bodies_);
+	int shared = arr.size * sizeof(SimBody);
     while (running_)
     {
 		int threads;
@@ -160,7 +199,8 @@ int Simulation::Run(void)
 
 		maxResidentThreads_ > numThreads_ ? threads = numThreads_ / blocks_ : threads = maxResidentThreads_ / blocks_;
 
-		SimCalc <<< blocks_, threads>>>(arr);
+		//SimCalc <<< blocks_, threads>>>(arr);
+		SimCalc <<< blocks_, threads, shared>>>(arr);
 		cudaThreadSynchronize();
 		SimTick <<< blocks_, threads>>>(arr, timeStep);
         cudaThreadSynchronize();
@@ -195,7 +235,7 @@ int Simulation::Run(void)
 #if IS_LINUX
     std::cin >> sample;
 #else
-    system("pause");
+    //system("pause");
 #endif
     return 0;
 }
