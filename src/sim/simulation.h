@@ -31,6 +31,8 @@ private:
 	int sampleCount_;
 	unsigned numBlocks_;
 	unsigned numThreads_;
+	unsigned blocks_;
+	unsigned maxResidentThreads_;
 
 	Simulation(void);
 public:
