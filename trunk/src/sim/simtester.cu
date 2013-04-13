@@ -64,7 +64,7 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
         std::cout << "Invalid CUDA device found... aborting." << std::endl;
         return h_bodies;
     }
-	BodyArray arr = MakeArray(d_bodies);
+	BodyArray arr = MakeArray(&d_bodies);
 
     int maxThreads = prop.maxThreadsDim[0]/4;
 	int maxBlocks = prop.major > 2 ? 16 : 8;

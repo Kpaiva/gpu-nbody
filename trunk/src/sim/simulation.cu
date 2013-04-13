@@ -7,9 +7,9 @@
 
 #include <cstdint>
 
-BodyArray MakeArray(thrust::device_vector<SimBody> &arr)
+BodyArray MakeArray(thrust::device_vector<SimBody>* arr)
 {
-    BodyArray ba = { thrust::raw_pointer_cast(&arr[0]), arr.size() };
+    BodyArray ba = { thrust::raw_pointer_cast(&(*arr->begin())), arr->size() };
     return ba;
 }
 
@@ -51,7 +51,7 @@ void __global__ SimTick(BodyArray a, _T dt)
     }
 }
 
-Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0), maxResidentThreads_(0), blocks_(0) { }
+Simulation::Simulation(void) : sampleCount_(-1), numBlocks_(0), numThreads_(0) { }
 
 Simulation &Simulation::GetInstance(void)
 {
@@ -85,9 +85,10 @@ int Simulation::Setup(int argc, char *argv[])
     }
     std::cout << "Setting up " << num_bodies << " bodies." << std::endl;
     srand(time(NULL));
-    bodies_.reserve(num_bodies);
+
+	bodies_ = new thrust::device_vector<SimBody>(num_bodies);
     for (unsigned i = 0; i < num_bodies; ++i)
-        bodies_.push_back(SimBody(
+        bodies_->push_back(SimBody(
                               random(1.0E11f, 3.0E11f),
                               random(-6.0E11f, 9.0E11f),
                               random(-1000.0f, 1000.0f),
@@ -117,9 +118,9 @@ int Simulation::Setup(int argc, char *argv[])
     }
     int maxThreads = prop.maxThreadsDim[0]/4;
 	int maxBlocks = prop.major > 2 ? 16 : 8;
-	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
+	int maxResidentThreads = prop.maxThreadsPerMultiProcessor;
 
-	numBlocks_ = (bodies_.size() + maxThreads - 1) / maxThreads;
+	numBlocks_ = (bodies_->size() + maxThreads - 1) / maxThreads;
 	numThreads_ = maxThreads;
 
 	while(numBlocks_ > maxBlocks) {
@@ -132,7 +133,8 @@ int Simulation::Setup(int argc, char *argv[])
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
               "\tThreads: " << numThreads_ << std::endl <<
-			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl;
+			  "\tMax Blocks: " << ((prop.major > 2) ? 16 : 8) << std::endl <<
+			  "\tMax Resident Threads: " << maxResidentThreads << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
 }
@@ -153,9 +155,9 @@ int Simulation::Run(void)
     while (running_)
     {
 		//SimCalc <<< blocks_, threads>>>(arr);
-		SimCalc <<< numBlocks_, numThreads_>>>(arr);
+		SimCalc <<<numBlocks_, numThreads_>>>(arr);
 		cudaThreadSynchronize();
-		SimTick <<< blocks_, numThreads_>>>(arr, timeStep);
+		SimTick <<<numBlocks_, numThreads_>>>(arr, timeStep);
         cudaThreadSynchronize();
 
         ++sample;
@@ -178,6 +180,9 @@ int Simulation::Run(void)
         }
     }
 	cudaDeviceReset();
+
+	delete bodies_;
+
     timer.stop();
     std::cout << sample << " Samples taken avg. " << std::fixed
               << float(timer.getElapsedTimeInMilliSec() / (float)sample)
@@ -185,6 +190,6 @@ int Simulation::Run(void)
               << " samples/sec. " << std::endl;
     if (sampleCount_ > 0)
         std::cout << "Total elapsed time: " << timer.getElapsedTimeInSec() << " seconds." << std::endl;
-    std::cout << "Completed the test with " << sample << " samples. Press any key to exit." << std::endl;
+    std::cout << "Completed the test with " << sample << " samples. Press any key to exit." << std::endl;	
     return 0;
 }
