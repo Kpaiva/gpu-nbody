@@ -57,8 +57,8 @@ void __global__ SimCalc(BodyArray a)
 	// start index at current unique thread index relating to grid
     for (size_t j = 0; j < a.size; ++j)
     {
-        //if (idx != j)
-        //{
+        if (idx != j)
+        {
             //a.array[idx].AddForce(a.array[j]);
 			//no more function overhead and register memory
 			float dx = a.array[j].Position.x - sa[tid].Position.x;
@@ -68,7 +68,7 @@ void __global__ SimCalc(BodyArray a)
 			float F = (G*sa[tid].Mass*a.array[j].Mass)/(r*r);
 			sa[tid].Force.x += F * (dx / r);
 			sa[tid].Force.y += F * (dy / r);
-        //}
+        }
 		__syncthreads();
     }
 
