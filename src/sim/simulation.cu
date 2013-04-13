@@ -115,19 +115,19 @@ int Simulation::Setup(int argc, char *argv[])
         std::cout << "Invalid CUDA device found... aborting." << std::endl;
         return 1;
     }
-    int max_threads = prop.maxThreadsDim[0];
-
-    numBlocks_ = (bodies_.size() + max_threads - 1) / max_threads;
-    numThreads_ = max_threads;
+    int nThreads = prop.maxThreadsDim[0];
 	maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
+
+	numBlocks_ = (bodies_.size() + nThreads - 1) / nThreads;
+	numThreads_ = nThreads;
 
 	prop.major > 2 ? blocks_ = 16 : blocks_ = 8;
 
     std::cout << "CUDA setup complete. Using:" << std::endl <<
               "\tBlocks: " << numBlocks_ << std::endl <<
               "\tThreads: " << numThreads_ << std::endl <<
-			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl <<
-			  "\tMax Resident Blocks: " << blocks_ << std::endl;
+			  "\tMax Resident Blocks: " << blocks_ << std::endl <<
+			  "\tMax Resident Threads: " << maxResidentThreads_ << std::endl;
     std::cout << "Completed setup... computing... " << std::endl;
     return 0;
 }
@@ -147,14 +147,10 @@ int Simulation::Run(void)
     BodyArray arr = MakeArray(bodies_);
     while (running_)
     {
-		int threads;
-			
-		maxResidentThreads_ > numThreads_ ? threads = numThreads_ / blocks_ : threads = maxResidentThreads_ / blocks_;
-
 		//SimCalc <<< blocks_, threads>>>(arr);
-		SimCalc <<< blocks_, threads>>>(arr);
+		SimCalc <<< numBlocks_, numThreads_>>>(arr);
 		cudaThreadSynchronize();
-		SimTick <<< blocks_, threads>>>(arr, timeStep);
+		SimTick <<< blocks_, numThreads_>>>(arr, timeStep);
         cudaThreadSynchronize();
 
         ++sample;
