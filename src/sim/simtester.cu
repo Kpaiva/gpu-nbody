@@ -66,15 +66,18 @@ std::vector<SimBody> SimDeviceTest(const std::vector<SimBody>& bodies, uint32_t 
     }
 	BodyArray arr = MakeArray(d_bodies);
 
-    int nThreads = prop.maxThreadsDim[0];
-	int maxResidentThreads_ = prop.maxThreadsPerMultiProcessor;
+    int maxThreads = prop.maxThreadsDim[0]/4;
+	int maxBlocks = prop.major > 2 ? 16 : 8;
 
-	int blocks = (d_bodies.size() + nThreads - 1) / nThreads;
-	int threads = nThreads;
-	if(d_bodies.size() < nThreads)
-		threads = d_bodies.size();
+	int blocks = (d_bodies.size() + maxThreads - 1) / maxThreads;
+	int threads = maxThreads;
 
-	prop.major > 2 ? blocks = 16 : blocks = 8;
+	while(blocks > maxBlocks) {
+		threads *= 2;
+		blocks /= 2;
+	}
+	//ensure even
+	blocks = (blocks+1) & ~1;
 
 	for(uint32_t sample(0); sample != num_samples; ++sample) {
 		SimCalc <<< blocks, threads >>>(arr);
@@ -152,6 +155,7 @@ void SimFullTest(uint32_t extra_passes)
 	}
 
 	success += !do_test(100, 1024);
+	success += !do_test(5120, 32);
 
 	if(success == 0) 
 		std::cout << "All tests passed!" << std::endl;	
