@@ -22,7 +22,7 @@ public:
 	vec2_t Force;
 	vec2_t Velocity;
 	vec2_t Position;
-	_SimBody(T px = 0.0f, T py = 0.0f, T vx = 0.0f, T vy = 0.0f, T mass = 0.0f) :
+	CUDA_CALLABLE_MEMBER _SimBody(T px = 0.0f, T py = 0.0f, T vx = 0.0f, T vy = 0.0f, T mass = 0.0f) :
 		Mass(mass), Velocity(vx,vy), Position(px,py), Force() { }
 
 #if IS_TESTING
