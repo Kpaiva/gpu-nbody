@@ -224,6 +224,7 @@ int Simulation::Run(void)
             running_ = false;
         }
     }
+	cudaDeviceReset();
     timer.stop();
     std::cout << sample << " Samples taken avg. " << std::fixed
               << float(timer.getElapsedTimeInMilliSec() / (float)sample)
@@ -232,10 +233,5 @@ int Simulation::Run(void)
     if (sampleCount_ > 0)
         std::cout << "Total elapsed time: " << timer.getElapsedTimeInSec() << " seconds." << std::endl;
     std::cout << "Completed the test with " << sample << " samples. Press any key to exit." << std::endl;
-#if IS_LINUX
-    std::cin >> sample;
-#else
-    //system("pause");
-#endif
     return 0;
 }
